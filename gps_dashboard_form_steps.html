@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LU GPS Dashboard Form</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #252820;
+  --bg-deep:    #1b1e17;
+  --card:       #7a8c52;
+  --card-dark:  #697849;
+  --card-hover: #849660;
+  --text:       #f2f0e6;
+  --text-muted: rgba(242,240,230,0.6);
+  --text-dim:   rgba(242,240,230,0.4);
+  --input-bg:   #ffffff;
+  --input-text: #252820;
+  --accent:     #9ab54a;
+  --accent-dim: rgba(154,181,74,0.25);
+  --red:        #e05a4a;
+  --topo:       rgba(160,175,110,0.06);
+  --radius:     14px;
+  --shadow:     0 6px 32px rgba(0,0,0,0.4);
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--bg-deep);
+  background-image:
+    repeating-radial-gradient(ellipse 140% 70% at 30% 40%,
+      transparent 0%, transparent 42%,
+      var(--topo) 43%, transparent 44%,
+      transparent 58%, var(--topo) 59%,
+      transparent 60%, transparent 74%,
+      var(--topo) 75%, transparent 76%
+    ),
+    repeating-radial-gradient(ellipse 100% 60% at 70% 65%,
+      transparent 0%, transparent 35%,
+      var(--topo) 36%, transparent 37%,
+      transparent 52%, var(--topo) 53%,
+      transparent 54%
+    );
+  min-height: 100vh;
+  color: var(--text);
+}
+
+/* ── STICKY HEADER ── */
+.sticky-header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(27,30,23,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(154,181,74,0.15);
+  padding: 14px 24px 0;
+}
+
+.header-top {
+  display: flex; align-items: center; gap: 16px;
+  max-width: 700px; margin: 0 auto;
+  padding-bottom: 14px;
+}
+
+.logo-mark {
+  width: 44px; height: 44px; flex-shrink: 0;
+  background: rgba(154,181,74,0.15);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.logo-mark svg { width: 26px; height: 26px; }
+
+.header-title {
+  font-size: 18px; font-weight: 700;
+  color: var(--accent); letter-spacing: -0.2px;
+  line-height: 1.1;
+}
+.header-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+
+/* ── STEP PROGRESS BAR ── */
+.step-track {
+  max-width: 700px; margin: 0 auto;
+  display: flex; align-items: center;
+  padding-bottom: 16px;
+  gap: 0;
+}
+
+.step-node {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  flex-shrink: 0;
+  cursor: default;
+}
+.step-node .dot {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(154,181,74,0.12);
+  border: 2px solid rgba(154,181,74,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--text-dim);
+  transition: all 0.3s;
+}
+.step-node.active .dot {
+  background: var(--accent); border-color: var(--accent);
+  color: var(--bg-deep);
+  box-shadow: 0 0 0 4px rgba(154,181,74,0.2);
+}
+.step-node.done .dot {
+  background: rgba(154,181,74,0.3); border-color: var(--accent);
+  color: var(--accent);
+}
+.step-node .step-label {
+  font-size: 9px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.8px; color: var(--text-dim);
+  white-space: nowrap; transition: color 0.3s;
+}
+.step-node.active .step-label { color: var(--accent); }
+.step-node.done .step-label { color: rgba(154,181,74,0.6); }
+
+.step-connector {
+  flex: 1; height: 2px;
+  background: rgba(154,181,74,0.12);
+  margin-bottom: 14px;
+  position: relative; overflow: hidden;
+}
+.step-connector .fill {
+  position: absolute; top: 0; left: 0;
+  height: 100%; width: 0%;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+
+/* ── PAGE WRAPPER ── */
+.page-wrap {
+  max-width: 700px; margin: 0 auto;
+  padding: 32px 16px 80px;
+}
+
+/* ── STEP PAGES ── */
+.step-page { display: none; }
+.step-page.active {
+  display: block;
+  animation: pageIn 0.35s ease both;
+}
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── STEP HEADER ── */
+.step-heading {
+  margin-bottom: 24px;
+}
+.step-eyebrow {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.8px; color: rgba(154,181,74,0.6);
+  margin-bottom: 5px;
+}
+.step-title {
+  font-size: 30px; font-weight: 700;
+  color: var(--text); letter-spacing: -0.4px; line-height: 1.1;
+}
+.step-desc {
+  font-size: 14px; color: var(--text-muted);
+  margin-top: 6px; line-height: 1.5;
+}
+
+/* ── CARDS ── */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px 22px 22px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.card.sub {
+  background: rgba(0,0,0,0.18);
+  border: 1px solid rgba(255,255,255,0.08);
+  margin-top: 10px; margin-bottom: 0;
+  animation: pageIn 0.25s ease both;
+}
+
+/* ── FIELD LABEL ── */
+.field-label {
+  font-size: 16px; font-weight: 600;
+  color: var(--text); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 5px;
+}
+.req { color: var(--red); font-size: 13px; }
+
+.field-hint {
+  font-size: 13px; color: var(--text-muted);
+  font-style: italic; margin-top: 8px; line-height: 1.45;
+}
+
+/* ── INPUTS ── */
+input[type=text], input[type=email],
+input[type=number], input[type=date],
+select, textarea {
+  width: 100%;
+  padding: 10px 14px;
+  font-family: 'Outfit', sans-serif; font-size: 15px;
+  color: var(--input-text);
+  background: var(--input-bg);
+  border: none; border-radius: 8px;
+  outline: none; transition: box-shadow 0.2s;
+}
+input:focus, select:focus, textarea:focus {
+  box-shadow: 0 0 0 3px rgba(154,181,74,0.5);
+}
+textarea { resize: vertical; min-height: 70px; }
+
+.name-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.name-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; padding-left: 2px; }
+@media(max-width:480px) { .name-row { grid-template-columns: 1fr; } }
+
+/* ── RADIO / CHECKBOX ── */
+.check-list, .radio-list { display: flex; flex-direction: column; gap: 10px; }
+
+.check-opt, .radio-opt {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 16px; font-weight: 400; color: var(--text);
+  cursor: pointer; user-select: none;
+}
+.check-opt input, .radio-opt input {
+  width: 20px; height: 20px;
+  accent-color: var(--input-text);
+  flex-shrink: 0; cursor: pointer;
+}
+
+/* ── MULTI-SELECT PANEL (stays open) ── */
+.ms-wrap {
+  background: var(--input-bg);
+  border-radius: 8px;
+  overflow: hidden;
+}
+/* Selected pills row */
+.ms-pills {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 10px 12px;
+  min-height: 42px;
+}
+.ms-pills:empty { padding: 0; min-height: 0; }
+.tag-pill {
+  background: #e6eccc;
+  color: #3a3d22;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 13px; font-weight: 500;
+  display: flex; align-items: center; gap: 5px;
+}
+.tag-pill .rm {
+  background: none; border: none; cursor: pointer;
+  font-size: 16px; color: #6a6a50; line-height: 1;
+  padding: 0; font-family: inherit;
+}
+.tag-pill .rm:hover { color: #c0392b; }
+
+/* Scrollable checkbox list */
+.ms-list {
+  border-top: 1px solid #e0e0d0;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.ms-list::-webkit-scrollbar { width: 6px; }
+.ms-list::-webkit-scrollbar-track { background: #f0f0e8; }
+.ms-list::-webkit-scrollbar-thumb { background: #c8cdb0; border-radius: 3px; }
+
+.ms-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 14px;
+  cursor: pointer;
+  color: var(--input-text);
+  font-size: 14px;
+  border-bottom: 1px solid #f0f0e8;
+  transition: background 0.15s;
+  user-select: none;
+}
+.ms-item:last-child { border-bottom: none; }
+.ms-item:hover { background: #f4f7ea; }
+.ms-item.selected { background: #edf2da; }
+.ms-item input[type=checkbox] {
+  width: 16px; height: 16px;
+  accent-color: #4a5a28;
+  flex-shrink: 0; pointer-events: none;
+}
+.ms-item .ms-item-label { flex: 1; }
+.ms-empty {
+  padding: 12px 14px;
+  font-size: 13px; color: #aaa; font-style: italic;
+}
+
+/* ── SCOPE CHIPS (step 2) ── */
+.scope-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+@media(max-width:400px) { .scope-grid { grid-template-columns: 1fr; } }
+.scope-chip {
+  background: rgba(0,0,0,0.18);
+  border: 2px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 16px 14px;
+  cursor: pointer; user-select: none;
+  display: flex; align-items: center; gap: 11px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.scope-chip:hover { border-color: rgba(154,181,74,0.4); background: rgba(0,0,0,0.28); }
+.scope-chip.selected {
+  border-color: var(--accent);
+  background: rgba(154,181,74,0.12);
+}
+.scope-chip input[type=checkbox] {
+  display: none;
+}
+.scope-chip .chip-icon { font-size: 22px; flex-shrink: 0; }
+.scope-chip .chip-label { font-size: 15px; font-weight: 500; color: var(--text); flex: 1; }
+.scope-chip .chip-check {
+  width: 20px; height: 20px; flex-shrink: 0;
+  border-radius: 5px;
+  border: 2px solid rgba(255,255,255,0.25);
+  background: rgba(0,0,0,0.2);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  font-size: 13px; color: transparent;
+}
+.scope-chip.selected .chip-check {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg-deep);
+}
+
+/* ── YES/NO BIG BUTTONS ── */
+.yn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 340px; }
+.yn-btn {
+  background: rgba(0,0,0,0.18);
+  border: 2px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 18px 14px;
+  cursor: pointer; user-select: none;
+  text-align: center;
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px; font-weight: 700; color: var(--text);
+  transition: all 0.2s;
+}
+.yn-btn:hover { border-color: rgba(154,181,74,0.4); }
+.yn-btn.selected { border-color: var(--accent); background: rgba(154,181,74,0.12); color: var(--accent); }
+.yn-btn input { display: none; }
+
+/* ── ESTIMATE LAYER CARDS ── */
+.est-layer-card {
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.est-layer-header {
+  display: flex; align-items: center; gap: 11px;
+  padding: 12px 15px; cursor: pointer; user-select: none;
+}
+.est-layer-header input[type=checkbox] {
+  width: 19px; height: 19px;
+  accent-color: #fff; flex-shrink: 0; cursor: pointer;
+}
+.est-layer-name { font-size: 15px; font-weight: 500; flex: 1; color: var(--text); }
+.est-badge {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.6px; padding: 2px 9px; border-radius: 20px;
+  background: rgba(255,255,255,0.1); color: var(--text-dim);
+  transition: all 0.2s;
+}
+.est-badge.on { background: rgba(154,181,74,0.3); color: #cee870; }
+
+.est-layer-body {
+  display: none;
+  background: rgba(0,0,0,0.15);
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding: 14px 15px 16px;
+}
+.est-layer-body.open { display: block; animation: pageIn 0.2s ease both; }
+
+.est-hint { font-size: 12px; color: var(--text-muted); font-style: italic; margin-bottom: 10px; line-height: 1.4; }
+
+.combo-rows { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.combo-row {
+  background: rgba(255,255,255,0.06);
+  border-radius: 7px; padding: 10px 12px;
+  display: grid; gap: 8px; position: relative;
+}
+.combo-row.g2 { grid-template-columns: 1fr 1fr; }
+.combo-row.g3 { grid-template-columns: 1fr 1fr 80px; }
+.combo-row.g4 { grid-template-columns: 1fr 1fr 70px 70px; }
+@media(max-width:500px) {
+  .combo-row.g2,.combo-row.g3,.combo-row.g4 { grid-template-columns: 1fr 1fr; }
+}
+.cf-wrap { display: flex; flex-direction: column; gap: 4px; }
+.cf-wrap label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); }
+.cf-wrap input, .cf-wrap select { padding: 7px 10px; font-size: 14px; border-radius: 6px; }
+
+.del-row-btn {
+  position: absolute; top: 7px; right: 8px;
+  background: none; border: none; cursor: pointer;
+  color: rgba(255,255,255,0.25); font-size: 20px; line-height: 1;
+  padding: 0 3px; font-family: inherit;
+}
+.del-row-btn:hover { color: var(--red); }
+
+.add-row-btn {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1.5px dashed rgba(255,255,255,0.18);
+  color: var(--text-muted);
+  font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 500;
+  padding: 8px 14px; border-radius: 7px;
+  cursor: pointer; text-align: left;
+  transition: all 0.2s;
+}
+.add-row-btn:hover {
+  background: rgba(154,181,74,0.12);
+  border-color: rgba(154,181,74,0.35); color: #cee870;
+}
+
+.est-cat-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.2px; color: rgba(154,181,74,0.5);
+  margin: 16px 0 8px;
+}
+.est-cat-label:first-child { margin-top: 0; }
+
+/* ── REVIEW CARD ── */
+.review-block {
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.review-block-title {
+  background: rgba(0,0,0,0.2);
+  padding: 10px 16px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.2px; color: rgba(154,181,74,0.7);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.review-block-body { padding: 12px 16px; font-size: 14px; line-height: 1.9; }
+.rv-row { display: flex; gap: 10px; }
+.rv-key { color: var(--text-muted); min-width: 150px; flex-shrink: 0; }
+.rv-val { font-weight: 500; color: var(--text); }
+.rv-layer { margin-bottom: 7px; }
+.rv-layer-name { font-weight: 600; color: var(--text); }
+.rv-layer-combos { font-size: 13px; color: var(--text-muted); margin-top: 1px; }
+
+/* ── NAV BUTTONS ── */
+.nav-row {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 28px; padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.btn {
+  font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700;
+  padding: 12px 28px; border-radius: 9px; border: none; cursor: pointer;
+  letter-spacing: 0.2px; transition: all 0.2s;
+}
+.btn-back {
+  background: rgba(255,255,255,0.08); color: var(--text-muted);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.btn-back:hover { background: rgba(255,255,255,0.13); color: var(--text); }
+.btn-next {
+  background: var(--accent); color: var(--bg-deep);
+  box-shadow: 0 4px 18px rgba(154,181,74,0.3);
+}
+.btn-next:hover { background: #aac855; transform: translateY(-1px); box-shadow: 0 6px 24px rgba(154,181,74,0.45); }
+.btn-next:active { transform: translateY(0); }
+.btn-submit {
+  background: var(--accent); color: var(--bg-deep); font-size: 17px;
+  padding: 14px 40px;
+  box-shadow: 0 4px 20px rgba(154,181,74,0.35);
+}
+.btn-submit:hover { background: #aac855; transform: translateY(-1px); }
+
+/* ── SUCCESS ── */
+#success-screen {
+  display: none; max-width: 700px; margin: 0 auto;
+  text-align: center; padding: 80px 24px;
+}
+.success-icon {
+  width: 88px; height: 88px; border-radius: 50%;
+  background: var(--accent); color: var(--bg-deep);
+  font-size: 40px; display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 28px;
+  box-shadow: 0 0 0 14px rgba(154,181,74,0.15);
+}
+#success-screen h2 { font-size: 34px; color: var(--accent); margin-bottom: 12px; }
+#success-screen p { color: var(--text-muted); font-size: 16px; line-height: 1.6; max-width: 400px; margin: 0 auto; }
+
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- ══════════ STICKY HEADER ══════════ -->
+<div class="sticky-header">
+  <div class="header-top">
+    <div class="logo-mark" style="background:none;overflow:hidden;padding:0">
+      <img src="data:image/png;base64,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" style="width:44px;height:44px;object-fit:cover;border-radius:50%;display:block">
+    </div>
+    <div>
+      <div class="header-title">LU GPS Dashboard Form</div>
+    </div>
+  </div>
+  </div>
+
+  <!-- Step Progress -->
+  <div class="step-track">
+    <div class="step-node active" id="sn1"><div class="dot">1</div><div class="step-label">Project</div></div>
+    <div class="step-connector"><div class="fill" id="conn1"></div></div>
+    <div class="step-node" id="sn2"><div class="dot">2</div><div class="step-label">Scope</div></div>
+    <div class="step-connector"><div class="fill" id="conn2"></div></div>
+    <div class="step-node" id="sn3"><div class="dot">3</div><div class="step-label">Tracking</div></div>
+    <div class="step-connector"><div class="fill" id="conn3"></div></div>
+    <div class="step-node" id="sn4"><div class="dot">4</div><div class="step-label">Quantities</div></div>
+    <div class="step-connector"><div class="fill" id="conn4"></div></div>
+    <div class="step-node" id="sn5"><div class="dot">5</div><div class="step-label">Review</div></div>
+  </div>
+</div>
+
+<div class="page-wrap">
+
+  <!-- ══════════════════════════════════════
+       STEP 1 — PROJECT INFO
+  ══════════════════════════════════════ -->
+  <div class="step-page active" id="step-1">
+    <div class="step-heading">
+      <div class="step-eyebrow">Step 1 of 5</div>
+      <div class="step-title">Project Information</div>
+      <div class="step-desc">Basic details about this project and the people involved.</div>
+    </div>
+
+    <div class="card">
+      <div class="field-label">Name of person submitting this form</div>
+      <div class="name-row">
+        <div>
+          <input type="text" id="sub-first" placeholder="First Name">
+          <div class="name-sub">First Name</div>
+        </div>
+        <div>
+          <input type="text" id="sub-last" placeholder="Last Name">
+          <div class="name-sub">Last Name</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="field-label">Project Name <span class="req">*</span></div>
+      <input type="text" id="proj-name" placeholder="">
+    </div>
+
+    <div class="card">
+      <div class="field-label">Project Number <span class="req">*</span></div>
+      <input type="number" id="proj-number" placeholder="">
+    </div>
+
+    <div class="card">
+      <div class="field-label">Project Start Date <span class="req">*</span></div>
+      <input type="date" id="proj-date">
+    </div>
+
+    <div class="card">
+      <div class="field-label">GPS Collector</div>
+      <div class="name-row">
+        <div>
+          <input type="text" id="coll-first" placeholder="First Name">
+          <div class="name-sub">First Name</div>
+        </div>
+        <div>
+          <input type="text" id="coll-last" placeholder="Last Name">
+          <div class="name-sub">Last Name</div>
+        </div>
+      </div>
+      <div class="field-hint">Please input the name of the person who will be responsible for the GPS collection.</div>
+    </div>
+
+    <div class="nav-row">
+      <div></div>
+      <button class="btn btn-next" onclick="goTo(2)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       STEP 2 — SCOPE
+  ══════════════════════════════════════ -->
+  <div class="step-page" id="step-2">
+    <div class="step-heading">
+      <div class="step-eyebrow">Step 2 of 5</div>
+      <div class="step-title">Project Scope</div>
+      <div class="step-desc">Check any scope that will need to be tracked for this project.</div>
+    </div>
+
+    <div class="card">
+      <div class="field-label">Project Scope <span class="req">*</span></div>
+      <div class="scope-grid">
+        <div class="scope-chip" onclick="toggleScope(this,'drainage')">
+          <input type="checkbox" name="scope" value="drainage">
+          <span class="chip-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted)">
+              <path d="M3 9l4-4 4 4 4-4 4 4"/><path d="M3 15l4-4 4 4 4-4 4 4"/>
+              <line x1="3" y1="20" x2="21" y2="20"/>
+            </svg>
+          </span>
+          <span class="chip-label">Drainage</span>
+          <span class="chip-check">✓</span>
+        </div>
+        <div class="scope-chip" onclick="toggleScope(this,'irrigation')">
+          <input type="checkbox" name="scope" value="irrigation">
+          <span class="chip-icon">💧</span>
+          <span class="chip-label">Irrigation</span>
+          <span class="chip-check">✓</span>
+        </div>
+        <div class="scope-chip" onclick="toggleScope(this,'golf')">
+          <input type="checkbox" name="scope" value="golf">
+          <span class="chip-icon">⛳</span>
+          <span class="chip-label">Golf Course Features</span>
+          <span class="chip-check">✓</span>
+        </div>
+        <div class="scope-chip" onclick="toggleScope(this,'other')">
+          <input type="checkbox" name="scope" value="other">
+          <span class="chip-icon">📋</span>
+          <span class="chip-label">Other</span>
+          <span class="chip-check">✓</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- OTHER description (shows if Other selected) -->
+    <div class="card hidden" id="card-other-desc">
+      <div class="field-label">Other Scope — Describe</div>
+      <textarea id="other-desc" placeholder="Describe the additional scope items to be tracked..."></textarea>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-back" onclick="goTo(1)">← Back</button>
+      <button class="btn btn-next" onclick="goTo(3)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       STEP 3 — TRACKING LAYERS
+  ══════════════════════════════════════ -->
+  <div class="step-page" id="step-3">
+    <div class="step-heading">
+      <div class="step-eyebrow">Step 3 of 5</div>
+      <div class="step-title">Tracking Layers</div>
+      <div class="step-desc">Select every layer that needs to be tracked. Sections shown are based on your selected scope.</div>
+    </div>
+
+    <!-- Drainage Tracking -->
+    <div class="card hidden" id="card-drainage-tracking">
+      <div class="field-label">Drainage Tracking</div>
+      <div class="ms-wrap" id="ms-drainage">
+        <div class="ms-pills" id="drainage-tags"></div>
+        <div class="ms-list" id="drainage-list">
+          <div class="ms-item" onclick="toggleMsItem('drainage','Sumps',this)"><input type="checkbox"><span class="ms-item-label">Sumps</span></div>
+          <div class="ms-item" onclick="toggleMsItem('drainage','Flushouts',this)"><input type="checkbox"><span class="ms-item-label">Flushouts</span></div>
+          <div class="ms-item" onclick="toggleMsItem('drainage','Daylights',this)"><input type="checkbox"><span class="ms-item-label">Daylights</span></div>
+          <div class="ms-item" onclick="toggleMsItem('drainage','Basins',this)"><input type="checkbox"><span class="ms-item-label">Basins</span></div>
+          <div class="ms-item" onclick="toggleMsItem('drainage','Solid Pipe',this)"><input type="checkbox"><span class="ms-item-label">Solid Pipe</span></div>
+          <div class="ms-item" onclick="toggleMsItem('drainage','Perf Pipe',this)"><input type="checkbox"><span class="ms-item-label">Perf Pipe</span></div>
+        </div>
+      </div>
+      <div class="field-hint">Please select all drainage items that need to be tracked.</div>
+    </div>
+
+    <!-- Irrigation Tracking -->
+    <div class="card hidden" id="card-irrigation-tracking">
+      <div class="field-label">Irrigation Tracking</div>
+      <div class="ms-wrap" id="ms-irrigation">
+        <div class="ms-pills" id="irrigation-tags"></div>
+        <div class="ms-list" id="irrigation-list">
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Well',this)"><input type="checkbox"><span class="ms-item-label">Well</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Rain Bird Heads',this)"><input type="checkbox"><span class="ms-item-label">Rain Bird Heads</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Toro Heads',this)"><input type="checkbox"><span class="ms-item-label">Toro Heads</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Hunter Heads',this)"><input type="checkbox"><span class="ms-item-label">Hunter Heads</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Pump Station',this)"><input type="checkbox"><span class="ms-item-label">Pump Station</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Ground Plates',this)"><input type="checkbox"><span class="ms-item-label">Ground Plates</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Point of Connections',this)"><input type="checkbox"><span class="ms-item-label">Point of Connections</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Existing Heads',this)"><input type="checkbox"><span class="ms-item-label">Existing Heads</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Backflows',this)"><input type="checkbox"><span class="ms-item-label">Backflows</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Air Relief Valves',this)"><input type="checkbox"><span class="ms-item-label">Air Relief Valves</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','2 Wire Surge Devices',this)"><input type="checkbox"><span class="ms-item-label">2 Wire Surge Devices</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Wire Splices',this)"><input type="checkbox"><span class="ms-item-label">Wire Splices</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Quick Couplers',this)"><input type="checkbox"><span class="ms-item-label">Quick Couplers</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Satellites',this)"><input type="checkbox"><span class="ms-item-label">Satellites</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Drain Valves',this)"><input type="checkbox"><span class="ms-item-label">Drain Valves</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Lateral Valves',this)"><input type="checkbox"><span class="ms-item-label">Lateral Valves</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Isolation Valves',this)"><input type="checkbox"><span class="ms-item-label">Isolation Valves</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Electric Valves',this)"><input type="checkbox"><span class="ms-item-label">Electric Valves</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Wire Trench',this)"><input type="checkbox"><span class="ms-item-label">Wire Trench</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Mainline Pipe',this)"><input type="checkbox"><span class="ms-item-label">Mainline Pipe</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Lateral Pipe',this)"><input type="checkbox"><span class="ms-item-label">Lateral Pipe</span></div>
+        </div>
+      </div>
+      <div class="field-hint">Please select all Irrigation Items that need to be tracked.</div>
+    </div>
+
+    <!-- Golf Tracking -->
+    <div class="card hidden" id="card-golf-tracking">
+      <div class="field-label">Golf Course / Grassing Feature Tracking</div>
+      <div class="ms-wrap" id="ms-golf">
+        <div class="ms-pills" id="golf-tags"></div>
+        <div class="ms-list" id="golf-list">
+          <div class="ms-item" onclick="toggleMsItem('golf','Greens',this)"><input type="checkbox"><span class="ms-item-label">Greens</span></div>
+          <div class="ms-item" onclick="toggleMsItem('golf','Tees',this)"><input type="checkbox"><span class="ms-item-label">Tees</span></div>
+          <div class="ms-item" onclick="toggleMsItem('golf','Fairways',this)"><input type="checkbox"><span class="ms-item-label">Fairways</span></div>
+          <div class="ms-item" onclick="toggleMsItem('golf','Bunkers',this)"><input type="checkbox"><span class="ms-item-label">Bunkers</span></div>
+          <div class="ms-item" onclick="toggleMsItem('golf','Native',this)"><input type="checkbox"><span class="ms-item-label">Native</span></div>
+          <div class="ms-item" onclick="toggleMsItem('golf','Disturbance',this)"><input type="checkbox"><span class="ms-item-label">Disturbance</span></div>
+          <div class="ms-item" onclick="toggleMsItem('golf','Creek',this)"><input type="checkbox"><span class="ms-item-label">Creek</span></div>
+          <div class="ms-item" onclick="toggleMsItem('golf','Bridges',this)"><input type="checkbox"><span class="ms-item-label">Bridges</span></div>
+          <div class="ms-item" onclick="toggleMsItem('golf','Sod',this)"><input type="checkbox"><span class="ms-item-label">Sod</span></div>
+          <div class="ms-item" onclick="toggleMsItem('golf','Lakes',this)"><input type="checkbox"><span class="ms-item-label">Lakes</span></div>
+          <div class="ms-item" onclick="toggleMsItem('golf','Cart Path',this)"><input type="checkbox"><span class="ms-item-label">Cart Path</span></div>
+        </div>
+      </div>
+      <div class="field-hint">Please select all course features and grassing features that need to be tracked.</div>
+    </div>
+
+    <!-- Special Case Features -->
+    <div class="card" id="card-special-features">
+      <div class="field-label">Any special case features to track that weren't listed above?</div>
+      <div class="yn-row">
+        <div class="yn-btn" id="sf-yes" onclick="setSpecialFeatures('yes')">Yes</div>
+        <div class="yn-btn" id="sf-no" onclick="setSpecialFeatures('no')">No</div>
+      </div>
+    </div>
+
+    <div class="card hidden" id="card-special-features-input">
+      <div class="field-label">Special Case Features</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;line-height:1.5">Enter the feature name and select its geometry type. Use <strong style="color:var(--text)">+ Add feature</strong> for each additional one.</p>
+      <div id="special-feature-rows">
+        <div class="combo-row g2 sf-row" style="position:relative">
+          <div class="cf-wrap"><label>Feature Name</label><input type="text" class="sf-name" placeholder="Feature name" oninput="refreshSpecialFeatureNames()"></div>
+          <div class="cf-wrap"><label>Feature Type</label>
+            <select class="sf-type">
+              <option value="">— Select type —</option>
+              <option value="Point">Point</option>
+              <option value="Line">Line</option>
+              <option value="Polygon">Polygon</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <button class="add-row-btn" type="button" onclick="addSpecialFeatureRow()" style="margin-top:8px">+ Add feature</button>
+    </div>
+
+    <!-- Hole by Hole (Golf only) -->
+    <div class="card hidden" id="card-hbh-question">
+      <div class="field-label">Do any features need tracked hole by hole? <span class="req">*</span></div>
+      <div class="yn-row">
+        <div class="yn-btn" id="hbh-yes-btn" onclick="handleHBH2('yes')">Yes</div>
+        <div class="yn-btn" id="hbh-no-btn" onclick="handleHBH2('no')">No</div>
+      </div>
+    </div>
+
+    <!-- HBH Drainage (before irrigation per request) -->
+    <div class="card hidden" id="card-hbh-drainage">
+      <div class="field-label">Hole by Hole Drainage Tracking</div>
+      <div class="ms-wrap" id="ms-hbh-drainage">
+        <div class="ms-pills" id="hbh-drainage-tags"></div>
+        <div class="ms-list" id="hbh-drainage-list">
+          <div class="ms-empty">Select drainage layers above first.</div>
+        </div>
+      </div>
+      <div class="field-hint">Please select all drainage items that need to be tracked hole by hole.</div>
+    </div>
+
+    <!-- HBH Irrigation -->
+    <div class="card hidden" id="card-hbh-irrigation">
+      <div class="field-label">Hole by Hole Irrigation Tracking</div>
+      <div class="ms-wrap" id="ms-hbh-irrigation">
+        <div class="ms-pills" id="hbh-irrigation-tags"></div>
+        <div class="ms-list" id="hbh-irrigation-list">
+          <div class="ms-empty">Select irrigation layers above first.</div>
+        </div>
+      </div>
+      <div class="field-hint">Please select all Irrigation Items that need to be tracked hole by hole.</div>
+    </div>
+
+    <!-- HBH Special Features (shown when hbh=yes AND special features exist) -->
+    <div class="card hidden" id="card-hbh-special">
+      <div class="field-label">Hole by Hole Special Feature Tracking</div>
+      <div class="ms-wrap" id="ms-hbh-special">
+        <div class="ms-pills" id="hbh-special-tags"></div>
+        <div class="ms-list" id="hbh-special-list">
+          <div class="ms-empty">No special features entered yet.</div>
+        </div>
+      </div>
+      <div class="field-hint">Select which special features need to be tracked hole by hole.</div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-back" onclick="goTo(2)">← Back</button>
+      <button class="btn btn-next" onclick="goTo(4)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       STEP 4 — ESTIMATE QUANTITIES
+  ══════════════════════════════════════ -->
+  <div class="step-page" id="step-4">
+    <div class="step-heading">
+      <div class="step-eyebrow">Step 4 of 5</div>
+      <div class="step-title">Estimate Quantities</div>
+      <div class="step-desc">Will any tracked quantities need to be compared against estimate quantities?</div>
+    </div>
+
+    <div class="card">
+      <div class="field-label">Compare against estimate quantities? <span class="req">*</span></div>
+      <div class="yn-row">
+        <label class="yn-btn" id="yn-yes" onclick="setYN('yes')">
+          <input type="radio" name="use-est" value="yes"> Yes
+        </label>
+        <label class="yn-btn" id="yn-no" onclick="setYN('no')">
+          <input type="radio" name="use-est" value="no"> No
+        </label>
+      </div>
+    </div>
+
+    <!-- Estimate detail — shown when Yes -->
+    <div class="card hidden" id="card-est-detail">
+      <div class="field-label">Enter estimate quantities by layer</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;line-height:1.65;background:rgba(0,0,0,0.15);border-radius:8px;padding:12px 14px;border-left:3px solid rgba(154,181,74,0.5)">
+        <strong style="color:var(--text);display:block;margin-bottom:6px">How this works:</strong>
+        Check the box next to any layer you want compared against an estimate. Unchecked layers will still be tracked — they just won't have a target quantity to compare against.<br><br>
+        <strong style="color:var(--text)">Quantity is required</strong> for any checked feature. If there are multiple types within a feature, fill in the additional fields to whatever degree you'd like them tracked in the dashboard.
+      </div>
+      <div id="est-layer-list">
+        <p style="font-size:14px;color:var(--text-muted);font-style:italic">No layers selected yet — go back to Step 3 and select your tracking layers first.</p>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-back" onclick="goTo(3)">← Back</button>
+      <button class="btn btn-next" onclick="goTo(5)">Review →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       STEP 5 — REVIEW & SUBMIT
+  ══════════════════════════════════════ -->
+  <div class="step-page" id="step-5">
+    <div class="step-heading">
+      <div class="step-eyebrow">Step 5 of 5</div>
+      <div class="step-title">Review & Submit</div>
+      <div class="step-desc">Double-check everything below, then submit your form.</div>
+    </div>
+
+    <div id="review-body"></div>
+
+    <div class="nav-row">
+      <button class="btn btn-back" onclick="goTo(4)">← Back</button>
+      <button class="btn btn-submit" onclick="submitForm()">✓ Submit Form</button>
+    </div>
+  </div>
+
+</div><!-- /page-wrap -->
+
+<!-- SUCCESS -->
+<div id="success-screen">
+  <div class="success-icon">✓</div>
+  <h2>Form Submitted!</h2>
+  <p>Your dashboard request has been received. Our team will follow up with any questions.</p>
+</div>
+
+<script>
+// ════════════════════════════════════════
+// MULTI-SELECT PANEL SYSTEM
+// ════════════════════════════════════════
+let currentStep = 1;
+const TOTAL_STEPS = 5;
+let specialFeaturesOn = null; // tracks yes/no for special features
+
+const tagState = {
+  drainage: [], irrigation: [], golf: [],
+  'hbh-irrigation': [], 'hbh-drainage': [], 'hbh-special': []
+};
+
+function toggleMsItem(group, value, el) {
+  const cb = el.querySelector('input[type=checkbox]');
+  const already = tagState[group].includes(value);
+
+  if (already) {
+    // deselect
+    tagState[group] = tagState[group].filter(v => v !== value);
+    el.classList.remove('selected');
+    cb.checked = false;
+  } else {
+    // select
+    tagState[group].push(value);
+    el.classList.add('selected');
+    cb.checked = true;
+  }
+
+  renderPills(group);
+
+  // If this is a primary group, refresh HBH lists
+  if (group === 'irrigation') refreshHBHList('irrigation');
+  if (group === 'drainage')   refreshHBHList('drainage');
+}
+
+// Kept for any legacy calls (not used by panels but safe to keep)
+function addTag(group, sel) {
+  const v = sel.value; if (!v) return;
+  if (!tagState[group].includes(v)) {
+    tagState[group].push(v);
+    renderPills(group);
+  }
+  sel.value = '';
+}
+
+function removeTag(group, value) {
+  tagState[group] = tagState[group].filter(v => v !== value);
+  renderPills(group);
+  // Sync the checkbox in the list
+  const listEl = document.getElementById(group + '-list');
+  if (listEl) {
+    listEl.querySelectorAll('.ms-item').forEach(item => {
+      const label = item.querySelector('.ms-item-label');
+      if (label && label.textContent === value) {
+        item.classList.remove('selected');
+        item.querySelector('input[type=checkbox]').checked = false;
+      }
+    });
+  }
+  if (group === 'irrigation') refreshHBHList('irrigation');
+  if (group === 'drainage')   refreshHBHList('drainage');
+}
+
+function renderPills(group) {
+  const wrap = document.getElementById(group + '-tags');
+  if (!wrap) return;
+  wrap.innerHTML = tagState[group].map(t =>
+    `<span class="tag-pill">${t}<button class="rm" onclick="removeTag('${group}','${t.replace(/'/g,'\\\'')}')" type="button">×</button></span>`
+  ).join('');
+}
+
+// ── Refresh the HBH list to mirror parent selections ──
+function refreshHBHList(type) {
+  const parentTags = tagState[type];           // e.g. tagState['irrigation']
+  const hbhGroup   = 'hbh-' + type;           // 'hbh-irrigation'
+  const listEl     = document.getElementById('hbh-' + type + '-list');
+  if (!listEl) return;
+
+  if (parentTags.length === 0) {
+    listEl.innerHTML = `<div class="ms-empty">Select ${type} layers above first.</div>`;
+    // Clear any HBH selections that no longer have a parent
+    tagState[hbhGroup] = [];
+    renderPills(hbhGroup);
+    return;
+  }
+
+  // Rebuild list from parent tags only
+  listEl.innerHTML = parentTags.map(name => {
+    const alreadySelected = tagState[hbhGroup].includes(name);
+    return `<div class="ms-item${alreadySelected ? ' selected' : ''}" onclick="toggleMsItem('${hbhGroup}','${name.replace(/'/g,'\\\'').replace(/"/g,'&quot;')}',this)">
+      <input type="checkbox"${alreadySelected ? ' checked' : ''}>
+      <span class="ms-item-label">${name}</span>
+    </div>`;
+  }).join('');
+
+  // Remove any HBH selections that are no longer in parent list
+  tagState[hbhGroup] = tagState[hbhGroup].filter(v => parentTags.includes(v));
+  renderPills(hbhGroup);
+}
+
+let useEstimates = null;
+const rowCounts = {};
+
+// ════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════
+function goTo(n) {
+  if (n > currentStep && !validate(currentStep)) return;
+  document.getElementById('step-' + currentStep).classList.remove('active');
+  currentStep = n;
+  document.getElementById('step-' + n).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  updateProgress();
+  if (n === 3) applyScopeToStep3();
+  if (n === 4) buildEstimateList();
+  if (n === 5) buildReview();
+}
+
+function updateProgress() {
+  for (let i = 1; i <= TOTAL_STEPS; i++) {
+    const node = document.getElementById('sn' + i);
+    node.classList.remove('active', 'done');
+    if (i === currentStep) node.classList.add('active');
+    else if (i < currentStep) node.classList.add('done');
+    // update dot text — done gets checkmark
+    const dot = node.querySelector('.dot');
+    dot.textContent = i < currentStep ? '✓' : i;
+  }
+  // Fill connectors
+  for (let i = 1; i < TOTAL_STEPS; i++) {
+    document.getElementById('conn' + i).style.width = i < currentStep ? '100%' : '0%';
+  }
+}
+
+// ════════════════════════════════════════
+// VALIDATION
+// ════════════════════════════════════════
+function validate(step) {
+  if (step === 1) {
+    if (!val('proj-name') || !val('proj-number') || !val('proj-date')) {
+      alert('Please fill in Project Name, Project Number, and Project Start Date before continuing.');
+      return false;
+    }
+  }
+  if (step === 2) {
+    const checked = document.querySelectorAll('input[name=scope]:checked');
+    if (checked.length === 0) {
+      alert('Please select at least one Project Scope before continuing.');
+      return false;
+    }
+  }
+  if (step === 3) {
+    const scope = getScope();
+    const hasLayers =
+      (scope.includes('drainage') && tagState.drainage.length > 0) ||
+      (scope.includes('irrigation') && tagState.irrigation.length > 0) ||
+      (scope.includes('golf') && tagState.golf.length > 0) ||
+      scope.includes('other');
+    if (!hasLayers) {
+      alert('Please select at least one layer to track before continuing.');
+      return false;
+    }
+  }
+  if (step === 4) {
+    if (useEstimates === null) {
+      alert('Please indicate whether quantities need to be compared against estimates.');
+      return false;
+    }
+    if (useEstimates) {
+      const errors = validateEstimateFields();
+      if (errors.length > 0) {
+        alert(errors.join('\n\n'));
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function val(id) { return document.getElementById(id)?.value?.trim(); }
+function getScope() {
+  return Array.from(document.querySelectorAll('input[name=scope]:checked')).map(c => c.value);
+}
+
+// ════════════════════════════════════════
+// SCOPE CHIPS
+// ════════════════════════════════════════
+function toggleScope(el, scopeVal) {
+  el.classList.toggle('selected');
+  const cb = el.querySelector('input[type=checkbox]');
+  cb.checked = el.classList.contains('selected');
+  show('card-other-desc', getScope().includes('other'));
+}
+
+function applyScopeToStep3() {
+  const scope = getScope();
+  show('card-drainage-tracking', scope.includes('drainage'));
+  show('card-irrigation-tracking', scope.includes('irrigation'));
+  show('card-golf-tracking', scope.includes('golf'));
+  show('card-hbh-question', scope.includes('golf'));
+  if (!scope.includes('golf')) {
+    hbhValue = null;
+    show('card-hbh-irrigation', false);
+    show('card-hbh-drainage', false);
+    show('card-hbh-special', false);
+    const yb = document.getElementById('hbh-yes-btn');
+    const nb = document.getElementById('hbh-no-btn');
+    if (yb) yb.classList.remove('selected');
+    if (nb) nb.classList.remove('selected');
+  }
+}
+
+// ════════════════════════════════════════
+// HBH
+// ════════════════════════════════════════
+let hbhValue = null;
+
+function handleHBH2(v) {
+  hbhValue = v;
+  document.getElementById('hbh-yes-btn').classList.toggle('selected', v === 'yes');
+  document.getElementById('hbh-no-btn').classList.toggle('selected', v === 'no');
+  const yes = v === 'yes';
+  const scope = getScope();
+  show('card-hbh-irrigation', yes && scope.includes('irrigation'));
+  show('card-hbh-drainage', yes && scope.includes('drainage'));
+  const sfNames = getSpecialFeatureNames();
+  show('card-hbh-special', yes && sfNames.length > 0);
+  if (yes && sfNames.length > 0) refreshHBHSpecialList();
+}
+
+function handleHBH(radio) {
+  // legacy — kept in case referenced elsewhere
+  handleHBH2(radio.value);
+}
+
+// ════════════════════════════════════════
+// SPECIAL CASE FEATURES
+// ════════════════════════════════════════
+function setSpecialFeatures(v) {
+  specialFeaturesOn = v === 'yes';
+  document.getElementById('sf-yes').classList.toggle('selected', v === 'yes');
+  document.getElementById('sf-no').classList.toggle('selected', v === 'no');
+  show('card-special-features-input', v === 'yes');
+  if (v !== 'yes') {
+    // clear HBH special too
+    show('card-hbh-special', false);
+    tagState['hbh-special'] = [];
+  }
+  refreshSpecialFeatureNames();
+}
+
+function addSpecialFeatureRow() {
+  const container = document.getElementById('special-feature-rows');
+  const div = document.createElement('div');
+  div.className = 'combo-row g2 sf-row';
+  div.style.position = 'relative';
+  div.innerHTML = `
+    <button class="del-row-btn" onclick="delRow(this);refreshSpecialFeatureNames()" type="button">×</button>
+    <div class="cf-wrap"><label>Feature Name</label><input type="text" class="sf-name" placeholder="Feature name" oninput="refreshSpecialFeatureNames()"></div>
+    <div class="cf-wrap"><label>Feature Type</label>
+      <select class="sf-type">
+        <option value="">— Select type —</option>
+        <option value="Point">Point</option>
+        <option value="Line">Line</option>
+        <option value="Polygon">Polygon</option>
+      </select>
+    </div>`;
+  container.appendChild(div);
+}
+
+function getSpecialFeatureNames() {
+  if (!specialFeaturesOn) return [];
+  return Array.from(document.querySelectorAll('.sf-name'))
+    .map(i => i.value.trim())
+    .filter(v => v.length > 0);
+}
+
+function getSpecialFeatures() {
+  // returns array of {name, type}
+  if (!specialFeaturesOn) return [];
+  const rows = document.querySelectorAll('.sf-row');
+  const result = [];
+  rows.forEach(row => {
+    const name = row.querySelector('.sf-name')?.value.trim();
+    const type = row.querySelector('.sf-type')?.value;
+    if (name) result.push({ name, type: type || '—' });
+  });
+  return result;
+}
+
+function refreshSpecialFeatureNames() {
+  const names = getSpecialFeatureNames();
+  // Update HBH special list if visible
+  const hbhRadio = document.querySelector('input[name=hbh]:checked');
+  const hbhYes = hbhRadio?.value === 'yes';
+  show('card-hbh-special', hbhYes && names.length > 0);
+  refreshHBHSpecialList();
+  // Prune hbh-special selections that no longer exist
+  tagState['hbh-special'] = tagState['hbh-special'].filter(n => names.includes(n));
+  renderPills('hbh-special');
+}
+
+function refreshHBHSpecialList() {
+  const names = getSpecialFeatureNames();
+  const listEl = document.getElementById('hbh-special-list');
+  if (!listEl) return;
+  if (names.length === 0) {
+    listEl.innerHTML = '<div class="ms-empty">No special features entered yet.</div>';
+    return;
+  }
+  listEl.innerHTML = names.map(name => {
+    const sel = tagState['hbh-special'].includes(name);
+    const safe = name.replace(/'/g, "\\'");
+    return `<div class="ms-item${sel ? ' selected' : ''}" onclick="toggleMsItem('hbh-special','${safe}',this)">
+      <input type="checkbox"${sel ? ' checked' : ''}>
+      <span class="ms-item-label">${name}</span>
+    </div>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════
+// TAG SYSTEM
+// ════════════════════════════════════════
+function addTag(group, sel) {
+  const v = sel.value; if (!v) return;
+  if (tagState[group].includes(v)) { sel.value = ''; return; }
+  tagState[group].push(v);
+  renderTags(group);
+  sel.value = '';
+}
+
+function removeTag(group, v) {
+  tagState[group] = tagState[group].filter(t => t !== v);
+  renderTags(group);
+}
+
+function renderTags(group) {
+  const wrap = document.getElementById(group + '-tags');
+  if (!wrap) return;
+  wrap.innerHTML = tagState[group].map(t =>
+    `<span class="tag-pill">${t}<button class="rm" onclick="removeTag('${group}','${t}')" type="button">×</button></span>`
+  ).join('');
+}
+
+// ════════════════════════════════════════
+// YES / NO ESTIMATES
+// ════════════════════════════════════════
+function setYN(v) {
+  useEstimates = v === 'yes';
+  document.getElementById('yn-yes').classList.toggle('selected', v === 'yes');
+  document.getElementById('yn-no').classList.toggle('selected', v === 'no');
+  show('card-est-detail', v === 'yes');
+  if (v === 'yes') buildEstimateList();
+}
+
+// ════════════════════════════════════════
+// LAYER CONFIGS
+// ════════════════════════════════════════
+const LAYER_CONFIGS = {
+  // ── IRRIGATION ──
+  // Heads: Head Type, Nozzle, Further Specs, Qty
+  'Rain Bird Heads':      { label:'Rain Bird Heads',      g:'g4', fields:[{k:'ht',l:'Head Type',p:''},{k:'nozzle',l:'Nozzle',p:''},{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
+  'Toro Heads':           { label:'Toro Heads',           g:'g4', fields:[{k:'ht',l:'Head Type',p:''},{k:'nozzle',l:'Nozzle',p:''},{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
+  'Hunter Heads':         { label:'Hunter Heads',         g:'g4', fields:[{k:'ht',l:'Head Type',p:''},{k:'nozzle',l:'Nozzle',p:''},{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
+  // Simple qty-only
+  'Well':                 { label:'Well',                 g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
+  'Pump Station':         { label:'Pump Station',         g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
+  'Ground Plates':        { label:'Ground Plates',        g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
+  'Point of Connections': { label:'Point of Connections', g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
+  'Existing Heads':       { label:'Existing Heads',       g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
+  // Size + Further Specs + Qty
+  'Backflows':            { label:'Backflows',            g:'g3', fields:[{k:'size',l:'Size',p:''},{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
+  'Air Relief Valves':    { label:'Air Relief Valves',    g:'g3', fields:[{k:'size',l:'Size',p:''},{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
+  'Quick Couplers':       { label:'Quick Couplers',       g:'g3', fields:[{k:'size',l:'Size',p:''},{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
+  'Drain Valves':         { label:'Drain Valves',         g:'g3', fields:[{k:'size',l:'Size',p:''},{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
+  'Lateral Valves':       { label:'Lateral Valves',       g:'g3', fields:[{k:'size',l:'Size',p:''},{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
+  'Isolation Valves':     { label:'Isolation Valves',     g:'g3', fields:[{k:'size',l:'Size',p:''},{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
+  'Electric Valves':      { label:'Electric Valves',      g:'g3', fields:[{k:'size',l:'Size',p:''},{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
+  // Satellites: Stations + Further Specs + Qty
+  'Satellites':           { label:'Satellites',           g:'g3', fields:[{k:'sta',l:'Stations',p:''},{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
+  // Wire / linear: Pipe Size + Further Specs + Qty (length)
+  'Wire Splices':         { label:'Wire Splices',         g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
+  '2 Wire Surge Devices': { label:'2 Wire Surge Devices', g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
+  'Wire Trench':          { label:'Wire Trench',          g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity (length)',p:'0',t:'number'}]},
+  'Mainline Pipe':        { label:'Mainline Pipe',        g:'g3', fields:[{k:'size',l:'Pipe Size',p:''},{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity (length)',p:'0',t:'number'}]},
+  'Lateral Pipe':         { label:'Lateral Pipe',         g:'g3', fields:[{k:'size',l:'Pipe Size',p:''},{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity (length)',p:'0',t:'number'}]},
+  // ── DRAINAGE ──
+  'Sumps':                { label:'Sumps',                g:'g3', fields:[{k:'size',l:'Size',p:''},{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
+  'Flushouts':            { label:'Flushouts',            g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
+  'Daylights':            { label:'Daylights',            g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
+  'Basins':               { label:'Basins',               g:'g3', fields:[{k:'size',l:'Size',p:''},{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
+  'Solid Pipe':           { label:'Solid Pipe',           g:'g3', fields:[{k:'size',l:'Pipe Size',p:''},{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity (length)',p:'0',t:'number'}]},
+  'Perf Pipe':            { label:'Perf Pipe',            g:'g3', fields:[{k:'size',l:'Pipe Size',p:''},{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity (length)',p:'0',t:'number'}]},
+  // ── GOLF FEATURES ──
+  'Greens':               { label:'Greens',               g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity (area)',p:'0',t:'number'}]},
+  'Tees':                 { label:'Tees',                 g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity (area)',p:'0',t:'number'}]},
+  'Fairways':             { label:'Fairways',             g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity (area)',p:'0',t:'number'}]},
+  'Bunkers':              { label:'Bunkers',              g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity (area)',p:'0',t:'number'}]},
+  'Native':               { label:'Native',               g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity (area)',p:'0',t:'number'}]},
+  'Disturbance':          { label:'Disturbance',          g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity (area)',p:'0',t:'number'}]},
+  'Creek':                { label:'Creek',                g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity (length)',p:'0',t:'number'}]},
+  'Bridges':              { label:'Bridges',              g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity (length)',p:'0',t:'number'}]},
+  'Sod':                  { label:'Sod',                  g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity (area)',p:'0',t:'number'}]},
+  'Lakes':                { label:'Lakes',                g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity (area)',p:'0',t:'number'}]},
+  'Cart Path':            { label:'Cart Path',            g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity (specify length or area)',p:'0',t:'number'}]},
+};
+
+// ════════════════════════════════════════
+// ESTIMATE VALIDATION
+// ════════════════════════════════════════
+function validateEstimateFields() {
+  const errors = [];
+  // Find all checked est layer cards
+  const checkedCards = document.querySelectorAll('.est-layer-card input[type=checkbox]:checked');
+
+  checkedCards.forEach(cb => {
+    const cardId = cb.id.replace('elcb-', '');
+    const layerName = document.querySelector(`#elc-${cardId} .est-layer-name`)?.textContent?.trim() || cardId;
+    const rowsContainer = document.getElementById('rows-' + cardId);
+    if (!rowsContainer) return;
+
+    const rows = rowsContainer.querySelectorAll('.combo-row');
+
+    rows.forEach((row, rowIdx) => {
+      // Check qty is filled
+      const qtyInput = row.querySelector('.qty-field');
+      if (!qtyInput || !qtyInput.value.trim()) {
+        errors.push(`"${layerName}" — Row ${rowIdx + 1}: Quantity is required.`);
+        if (qtyInput) qtyInput.style.boxShadow = '0 0 0 2px #e05a4a';
+        return;
+      } else if (qtyInput) {
+        qtyInput.style.boxShadow = '';
+      }
+
+      // If more than one row, check that at least one spec field has a value
+      if (rows.length > 1) {
+        const specInputs = Array.from(row.querySelectorAll('.spec-field'));
+        const hasSpec = specInputs.some(inp => inp.value.trim().length > 0);
+        if (!hasSpec) {
+          errors.push(`"${layerName}" — Row ${rowIdx + 1}: Please fill in at least one specification field so we can tell this type apart from the others.`);
+          specInputs.forEach(inp => { inp.style.boxShadow = '0 0 0 2px #e05a4a'; });
+        } else {
+          specInputs.forEach(inp => { inp.style.boxShadow = ''; });
+        }
+      }
+    });
+  });
+
+  return errors;
+}
+
+// ════════════════════════════════════════
+// BUILD ESTIMATE LIST
+// ════════════════════════════════════════
+function buildEstimateList() {
+  const list = document.getElementById('est-layer-list');
+  const irrLayers = tagState.irrigation;
+  const drainLayers = tagState.drainage;
+  const golfLayers = tagState.golf;
+  const specialFeatures = getSpecialFeatures();
+
+  if (irrLayers.length === 0 && drainLayers.length === 0 && golfLayers.length === 0 && specialFeatures.length === 0) {
+    list.innerHTML = `<p style="font-size:14px;color:var(--text-muted);font-style:italic">No layers selected yet — go back to Step 3 and select your tracking layers first.</p>`;
+    return;
+  }
+
+  let html = '';
+  if (drainLayers.length > 0) {
+    html += `<div class="est-cat-label">Drainage Layers</div>`;
+    drainLayers.forEach(name => { html += buildEstCard(name); });
+  }
+  if (irrLayers.length > 0) {
+    html += `<div class="est-cat-label">Irrigation Layers</div>`;
+    irrLayers.forEach(name => { html += buildEstCard(name); });
+  }
+  if (golfLayers.length > 0) {
+    html += `<div class="est-cat-label">Golf Course Features</div>`;
+    golfLayers.forEach(name => { html += buildEstCard(name); });
+  }
+  if (specialFeatures.length > 0) {
+    html += `<div class="est-cat-label">Special Features</div>`;
+    specialFeatures.forEach(sf => { html += buildEstCardSpecial(sf); });
+  }
+  list.innerHTML = html;
+}
+
+function buildEstCardSpecial(sf) {
+  const id = 'sf_' + sid(sf.name);
+  const typeLabel = sf.type && sf.type !== '—' ? ` <span style="opacity:.6;font-size:12px">(${sf.type})</span>` : '';
+  const qtyLabel = sf.type === 'Line' ? 'Quantity (length)' : sf.type === 'Polygon' ? 'Quantity (area)' : 'Quantity';
+
+  const bodyHtml = `
+    <div class="combo-rows" id="rows-${id}">
+      <div class="combo-row g2" style="position:relative">
+        <div class="cf-wrap"><label>Further Specs <span style="color:var(--text-muted);font-size:10px">optional</span></label><input type="text" class="spec-field" placeholder=""></div>
+        <div class="cf-wrap"><label>${qtyLabel} <span style="color:var(--red);font-size:10px">required</span></label><input type="number" class="qty-field" placeholder="0"></div>
+      </div>
+    </div>
+    <button class="add-row-btn" type="button" onclick="addRowSpecial('${id}','${qtyLabel}')">
+      + Add type &ensp;<span style="opacity:.45;font-size:11px">use this if you have multiple distinct types</span>
+    </button>`;
+
+  return `<div class="est-layer-card" id="elc-${id}">
+    <div class="est-layer-header" onclick="toggleEst('${id}', this)">
+      <input type="checkbox" id="elcb-${id}" onclick="event.stopPropagation(); onEstCheck('${id}', this)">
+      <span class="est-layer-name">${sf.name}${typeLabel}</span>
+      <span class="est-badge" id="elbadge-${id}">include</span>
+    </div>
+    <div class="est-layer-body" id="elbody-${id}">${bodyHtml}</div>
+  </div>`;
+}
+
+function addRowSpecial(id, qtyLabel) {
+  const ql = qtyLabel || 'Quantity';
+  const container = document.getElementById('rows-' + id);
+  if (!container) return;
+  const div = document.createElement('div');
+  div.innerHTML = `<div class="combo-row g2" style="position:relative">
+    <button class="del-row-btn" onclick="delRow(this)" type="button">×</button>
+    <div class="cf-wrap"><label>Further Specs <span style="color:var(--text-muted);font-size:10px">optional</span></label><input type="text" class="spec-field" placeholder=""></div>
+    <div class="cf-wrap"><label>${ql} <span style="color:var(--red);font-size:10px">required</span></label><input type="number" class="qty-field" placeholder="0"></div>
+  </div>`;
+  container.appendChild(div.firstElementChild);
+}
+
+function sid(name) { return name.replace(/[^a-zA-Z0-9]/g, '_'); }
+
+function buildEstCard(name) {
+  const cfg = LAYER_CONFIGS[name];
+  const id = sid(name);
+
+  const bodyHtml = `
+    <div class="combo-rows" id="rows-${id}">
+      ${buildComboRow(cfg, id, 0, false)}
+    </div>
+    <button class="add-row-btn" type="button" onclick="addRow('${id}')">
+      + Add type &ensp;<span style="opacity:.45;font-size:11px">use this if you have multiple distinct types or sizes</span>
+    </button>`;
+
+  return `<div class="est-layer-card" id="elc-${id}">
+    <div class="est-layer-header" onclick="toggleEst('${id}', this)">
+      <input type="checkbox" id="elcb-${id}" onclick="event.stopPropagation(); onEstCheck('${id}', this)">
+      <span class="est-layer-name">${cfg ? cfg.label : name}</span>
+      <span class="est-badge" id="elbadge-${id}">include</span>
+    </div>
+    <div class="est-layer-body" id="elbody-${id}">${bodyHtml}</div>
+  </div>`;
+}
+
+function buildComboRow(cfg, id, idx, showDel) {
+  const del = showDel ? `<button class="del-row-btn" onclick="delRow(this)" type="button">×</button>` : '';
+  const fields = cfg && cfg.fields ? cfg.fields.map((f, fi) => {
+    const isQty = fi === cfg.fields.length - 1;
+    const requiredMark = isQty ? ` <span style="color:var(--red);font-size:10px">required</span>` : '';
+    return `<div class="cf-wrap">
+      <label>${f.l}${requiredMark}</label>
+      <input type="${f.t||'text'}" placeholder="${f.p||''}" ${isQty ? 'class="qty-field"' : 'class="spec-field"'}>
+    </div>`;
+  }).join('') : `<div class="cf-wrap"><label>Further Specs <span style="color:var(--text-muted);font-size:10px">optional</span></label><input type="text" class="spec-field" placeholder=""></div>
+    <div class="cf-wrap"><label>Quantity <span style="color:var(--red);font-size:10px">required</span></label><input type="number" class="qty-field" placeholder="0"></div>`;
+
+  const colClass = cfg && cfg.g ? cfg.g : 'g2';
+  return `<div class="combo-row ${colClass}" style="position:relative">${del}${fields}</div>`;
+}
+
+function addRow(id) {
+  const name = Object.keys(LAYER_CONFIGS).find(k => sid(k) === id);
+  const cfg = name ? LAYER_CONFIGS[name] : null;
+  rowCounts[id] = (rowCounts[id] || 1) + 1;
+  const rows = document.getElementById('rows-' + id);
+  const div = document.createElement('div');
+  div.innerHTML = buildComboRow(cfg, id, rowCounts[id], true);
+  rows.appendChild(div.firstElementChild);
+}
+
+// Remove the old helpers that are no longer needed
+function buildEntryRow() {}
+function toggleSpecPanel() {}
+function addEntryRow(id) { addRow(id); }
+
+function delRow(btn) { btn.closest('.combo-row').remove(); }
+
+function toggleEst(id, headerEl) {
+  const cb = document.getElementById('elcb-' + id);
+  cb.checked = !cb.checked;
+  applyEstCheck(id, cb.checked);
+}
+function onEstCheck(id, cb) { applyEstCheck(id, cb.checked); }
+function applyEstCheck(id, on) {
+  document.getElementById('elbody-' + id).classList.toggle('open', on);
+  const badge = document.getElementById('elbadge-' + id);
+  badge.classList.toggle('on', on);
+  badge.textContent = on ? 'included ✓' : 'include';
+}
+
+// ════════════════════════════════════════
+// BUILD REVIEW
+// ════════════════════════════════════════
+function buildReview() {
+  const scope = getScope();
+  const scopeLabels = { drainage:'Drainage', irrigation:'Irrigation', golf:'Golf Course Features', other:'Other' };
+
+  let html = `
+  <div class="review-block">
+    <div class="review-block-title">Project Info</div>
+    <div class="review-block-body">
+      <div class="rv-row"><span class="rv-key">Submitted by</span><span class="rv-val">${val('sub-first')||''} ${val('sub-last')||''}</span></div>
+      <div class="rv-row"><span class="rv-key">Project Name</span><span class="rv-val">${val('proj-name')||'—'}</span></div>
+      <div class="rv-row"><span class="rv-key">Project Number</span><span class="rv-val">${val('proj-number')||'—'}</span></div>
+      <div class="rv-row"><span class="rv-key">Start Date</span><span class="rv-val">${val('proj-date')||'—'}</span></div>
+      <div class="rv-row"><span class="rv-key">GPS Collector</span><span class="rv-val">${val('coll-first')||''} ${val('coll-last')||''}</span></div>
+    </div>
+  </div>
+  <div class="review-block">
+    <div class="review-block-title">Scope</div>
+    <div class="review-block-body">
+      <div class="rv-row"><span class="rv-key">Selected Scope</span><span class="rv-val">${scope.map(s=>scopeLabels[s]).join(', ')||'—'}</span></div>
+    </div>
+  </div>`;
+
+  // Tracking layers
+  const allGroups = [
+    { key: 'irrigation', label: 'Irrigation Tracking' },
+    { key: 'drainage', label: 'Drainage Tracking' },
+    { key: 'golf', label: 'Golf Course Tracking' },
+    { key: 'hbh-drainage', label: 'Hole-by-Hole Drainage' },
+    { key: 'hbh-irrigation', label: 'Hole-by-Hole Irrigation' },
+    { key: 'hbh-special', label: 'Hole-by-Hole Special Features' },
+  ];
+  const layerBlocks = allGroups.filter(g => tagState[g.key].length > 0);
+  const specialFeats = getSpecialFeatures();
+
+  if (layerBlocks.length > 0 || specialFeats.length > 0) {
+    html += `<div class="review-block"><div class="review-block-title">Tracking Layers</div><div class="review-block-body">`;
+    layerBlocks.forEach(g => {
+      html += `<div class="rv-row"><span class="rv-key">${g.label}</span><span class="rv-val">${tagState[g.key].join(', ')}</span></div>`;
+    });
+    if (specialFeats.length > 0) {
+      html += `<div class="rv-row"><span class="rv-key">Special Features</span><span class="rv-val">${specialFeats.map(s => `${s.name} (${s.type})`).join(', ')}</span></div>`;
+    }
+    html += `</div></div>`;
+  }
+
+  // Estimates
+  html += `<div class="review-block"><div class="review-block-title">Estimates</div><div class="review-block-body">`;
+  html += `<div class="rv-row"><span class="rv-key">Compare to estimates?</span><span class="rv-val">${useEstimates ? 'Yes' : 'No'}</span></div>`;
+
+  if (useEstimates) {
+    const stdLayers = [...tagState.irrigation, ...tagState.drainage, ...tagState.golf].filter(name => {
+      return document.getElementById('elcb-' + sid(name))?.checked;
+    });
+    const sfIncluded = specialFeats.filter(sf => {
+      return document.getElementById('elcb-sf_' + sid(sf.name))?.checked;
+    });
+
+    if (stdLayers.length > 0 || sfIncluded.length > 0) {
+      stdLayers.forEach(name => {
+        const id = sid(name);
+        const cfg = LAYER_CONFIGS[name];
+        html += `<div class="rv-layer" style="margin-top:8px">`;
+        html += `<div class="rv-layer-name">✓ ${cfg ? cfg.label : name}</div>`;
+        if (cfg && !cfg.simple) {
+          document.querySelectorAll(`#rows-${id} .combo-row`).forEach((row, i) => {
+            const parts = [...row.querySelectorAll('input')].filter(i=>i.value).map(i=>i.value);
+            if (parts.length) html += `<div class="rv-layer-combos">Row ${i+1}: ${parts.join(' · ')}</div>`;
+          });
+        } else if (cfg && cfg.simple) {
+          const inp = document.querySelector(`#rows-${id} input`);
+          if (inp?.value) html += `<div class="rv-layer-combos">Qty: ${inp.value}</div>`;
+        }
+        html += `</div>`;
+      });
+      sfIncluded.forEach(sf => {
+        const id = 'sf_' + sid(sf.name);
+        html += `<div class="rv-layer" style="margin-top:8px">`;
+        html += `<div class="rv-layer-name">✓ ${sf.name} <span style="opacity:.6;font-size:12px">(${sf.type})</span></div>`;
+        document.querySelectorAll(`#rows-${id} .combo-row`).forEach((row, i) => {
+          const parts = [...row.querySelectorAll('input')].filter(i=>i.value).map(i=>i.value);
+          if (parts.length) html += `<div class="rv-layer-combos">Row ${i+1}: ${parts.join(' · ')}</div>`;
+        });
+        html += `</div>`;
+      });
+    } else {
+      html += `<div class="rv-row" style="margin-top:6px"><span class="rv-key" style="color:var(--text-muted);font-style:italic">No layers checked for comparison yet.</span></div>`;
+    }
+  }
+
+  html += `</div></div>`;
+  document.getElementById('review-body').innerHTML = html;
+}
+
+// ════════════════════════════════════════
+// SUBMIT
+// ════════════════════════════════════════
+const APPS_SCRIPT_URL = 'PASTE_YOUR_APPS_SCRIPT_URL_HERE';
+
+function collectEstimateData() {
+  const estimates = [];
+  const allLayers = [...tagState.irrigation, ...tagState.drainage, ...tagState.golf];
+  const specialFeats = getSpecialFeatures();
+
+  allLayers.forEach(name => {
+    const id = sid(name);
+    const cb = document.getElementById('elcb-' + id);
+    if (!cb?.checked) return;
+    const cfg = LAYER_CONFIGS[name];
+    const rows = [];
+    document.querySelectorAll(`#rows-${id} .combo-row`).forEach(row => {
+      const specInps = [...row.querySelectorAll('.spec-field')].map(i => i.value.trim()).filter(Boolean);
+      const qtyInp = row.querySelector('.qty-field');
+      const qty = qtyInp?.value?.trim() || '';
+      if (qty || specInps.length) rows.push({ specs: specInps.join(' / '), qty });
+    });
+    if (rows.length) estimates.push({ name: cfg ? cfg.label : name, rows });
+  });
+
+  specialFeats.forEach(sf => {
+    const id = 'sf_' + sid(sf.name);
+    const cb = document.getElementById('elcb-' + id);
+    if (!cb?.checked) return;
+    const rows = [];
+    document.querySelectorAll(`#rows-${id} .combo-row`).forEach(row => {
+      const specInp = row.querySelector('.spec-field');
+      const qtyInp = row.querySelector('.qty-field');
+      const specs = specInp?.value?.trim() || '';
+      const qty = qtyInp?.value?.trim() || '';
+      if (qty || specs) rows.push({ specs, qty });
+    });
+    if (rows.length) estimates.push({ name: sf.name, type: sf.type, rows });
+  });
+
+  return estimates;
+}
+
+async function submitForm() {
+  const submitBtn = document.querySelector('.btn-submit');
+  submitBtn.textContent = 'Submitting…';
+  submitBtn.disabled = true;
+
+  const payload = {
+    submitter: (val('sub-first') + ' ' + val('sub-last')).trim(),
+    projectName: val('proj-name'),
+    projectNumber: val('proj-number'),
+    projectDate: val('proj-date'),
+    gpsCollector: (val('coll-first') + ' ' + val('coll-last')).trim(),
+    projectNotes: val('other-desc') || '',
+    scope: getScope(),
+    layers: {
+      drainage: tagState.drainage,
+      irrigation: tagState.irrigation,
+      golf: tagState.golf
+    },
+    hbhDrainage: tagState['hbh-drainage'],
+    hbhIrrigation: tagState['hbh-irrigation'],
+    hbhSpecial: tagState['hbh-special'],
+    specialFeatures: getSpecialFeatures(),
+    useEstimates: useEstimates || false,
+    estimates: useEstimates ? collectEstimateData() : []
+  };
+
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    // no-cors means we can't read the response, but if no error was thrown it went through
+    document.querySelector('.sticky-header').style.display = 'none';
+    document.querySelector('.page-wrap').style.display = 'none';
+    document.getElementById('success-screen').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (err) {
+    submitBtn.textContent = '✓ Submit Form';
+    submitBtn.disabled = false;
+    alert('Submission failed — please check your connection and try again.\n\nError: ' + err.message);
+  }
+}
+
+// ════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════
+function show(id, visible) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle('hidden', !visible);
+}
+</script>
+</body>
+</html>
