@@ -408,23 +408,138 @@ function handleRowFileSelect(e) {
   uploadFile(e.target.files[0], idx, btn);
 }
 
+// ── FILE UPLOAD VIA GOOGLE DRIVE API ─────────────────────────
+var DRIVE_API_KEY    = 'AIzaSyDkLfurAxO1cJsScHmrvHXpEZe02xzbiAA';
+var DRIVE_FOLDER_ID  = '1LkR471Fsdr5Fp_Sm7-_ErfMeyrf-GJJd';
+
 async function uploadFile(file, rowIndex, btnEl) {
   var s = submissions[rowIndex];
   if (!s) return;
   if (btnEl) { btnEl.classList.add('uploading'); btnEl.textContent = 'Uploading\u2026'; }
   try {
-    var b64 = await fileToBase64(file);
-    var b64Data = b64.split(',')[1];
-    postUploadForm(s.id, file.name, file.type||'application/octet-stream', b64Data);
-    // Wait for Drive to receive it, then refresh
-    setTimeout(async function() {
-      await refreshSubmission(rowIndex);
-      if (btnEl) { btnEl.classList.remove('uploading'); }
-    }, 4000);
+    var result = await uploadToDrive(file, s.id);
+    await saveAttachmentToSheet(s.id, result.name, result.url, result.id);
+    await refreshSubmission(rowIndex);
+    if (btnEl) btnEl.classList.remove('uploading');
   } catch(err) {
     if (btnEl) { btnEl.classList.remove('uploading'); btnEl.textContent = 'Attach file'; }
     alert('Upload failed: ' + err.message);
   }
+}
+
+async function modalUploadFile(file) {
+  var statusEl = document.getElementById('modal-upload-status');
+  if (statusEl) { statusEl.style.color='var(--text-muted)'; statusEl.textContent = 'Uploading '+file.name+'\u2026'; }
+  try {
+    var result = await uploadToDrive(file, currentSubmission.id);
+    await saveAttachmentToSheet(currentSubmission.id, result.name, result.url, result.id);
+    if (statusEl) { statusEl.style.color='var(--accent)'; statusEl.textContent = '\u2713 Uploaded! Refreshing\u2026'; }
+    var idx = currentSubmission.rowIndex;
+    await refreshSubmission(idx);
+    if (statusEl) statusEl.textContent = '';
+  } catch(err) {
+    if (statusEl) { statusEl.style.color='var(--red)'; statusEl.textContent = 'Upload failed: ' + err.message; }
+  }
+}
+
+// Step 1: Upload file bytes to Drive, returns {id, name, url}
+async function uploadToDrive(file, submissionId) {
+  // Create or find subfolder named after submission ID
+  var folderId = await getOrCreateSubfolder(submissionId);
+
+  // Upload file using Drive API multipart upload
+  var metadata = JSON.stringify({ name: file.name, parents: [folderId] });
+  var boundary = 'M4BOUNDARY' + Date.now();
+  var fileBytes = await fileToArrayBuffer(file);
+
+  var body = '--' + boundary + '\r\n'
+    + 'Content-Type: application/json; charset=UTF-8\r\n\r\n'
+    + metadata + '\r\n'
+    + '--' + boundary + '\r\n'
+    + 'Content-Type: ' + (file.type || 'application/octet-stream') + '\r\n\r\n';
+
+  // Build multipart body as Uint8Array
+  var encoder = new TextEncoder();
+  var headerBytes = encoder.encode(body);
+  var footerBytes = encoder.encode('\r\n--' + boundary + '--');
+  var fileArray = new Uint8Array(fileBytes);
+  var combined = new Uint8Array(headerBytes.length + fileArray.length + footerBytes.length);
+  combined.set(headerBytes, 0);
+  combined.set(fileArray, headerBytes.length);
+  combined.set(footerBytes, headerBytes.length + fileArray.length);
+
+  var uploadRes = await fetch(
+    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&key=' + DRIVE_API_KEY,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'multipart/related; boundary=' + boundary },
+      body: combined
+    }
+  );
+
+  if (!uploadRes.ok) {
+    var errText = await uploadRes.text();
+    throw new Error('Drive upload failed: ' + errText);
+  }
+
+  var uploadData = await uploadRes.json();
+  var fileId = uploadData.id;
+
+  // Make file publicly viewable
+  await fetch(
+    'https://www.googleapis.com/drive/v3/files/' + fileId + '/permissions?key=' + DRIVE_API_KEY,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: 'reader', type: 'anyone' })
+    }
+  );
+
+  var fileUrl = 'https://drive.google.com/file/d/' + fileId + '/view';
+  return { id: fileId, name: file.name, url: fileUrl };
+}
+
+// Get subfolder by submission ID, or create it
+async function getOrCreateSubfolder(submissionId) {
+  // Search for existing subfolder
+  var searchRes = await fetch(
+    'https://www.googleapis.com/drive/v3/files?q='
+    + encodeURIComponent("name='" + submissionId + "' and '" + DRIVE_FOLDER_ID + "' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false")
+    + '&key=' + DRIVE_API_KEY
+  );
+  var searchData = await searchRes.json();
+  if (searchData.files && searchData.files.length > 0) {
+    return searchData.files[0].id;
+  }
+
+  // Create new subfolder
+  var createRes = await fetch(
+    'https://www.googleapis.com/drive/v3/files?key=' + DRIVE_API_KEY,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: submissionId,
+        mimeType: 'application/vnd.google-apps.folder',
+        parents: [DRIVE_FOLDER_ID]
+      })
+    }
+  );
+  var createData = await createRes.json();
+  return createData.id;
+}
+
+// Step 2: Save attachment info to Sheet via Apps Script
+async function saveAttachmentToSheet(submissionId, fileName, fileUrl, fileId) {
+  var url = APPS_SCRIPT_URL
+    + '?action=saveAttachment'
+    + '&submissionId=' + encodeURIComponent(submissionId)
+    + '&fileName='     + encodeURIComponent(fileName)
+    + '&fileUrl='      + encodeURIComponent(fileUrl)
+    + '&fileId='       + encodeURIComponent(fileId);
+  var res = await fetch(url);
+  var data = await res.json();
+  if (!data.success) throw new Error(data.error || 'Failed to save attachment to sheet');
 }
 
 function fileToBase64(file) {
@@ -436,18 +551,23 @@ function fileToBase64(file) {
   });
 }
 
+function fileToArrayBuffer(file) {
+  return new Promise(function(resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function() { resolve(reader.result); };
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
 async function refreshSubmission(rowIndex) {
   try {
     var res = await fetch(APPS_SCRIPT_URL);
     var data = await res.json();
     if (Array.isArray(data) && data[rowIndex]) {
       submissions[rowIndex].attachments = data[rowIndex].attachments || [];
-      // Re-render just the attach cell
       var rowEl = document.getElementById('row-'+rowIndex);
-      if (rowEl) {
-        rowEl.querySelector('.upload-cell').innerHTML = buildAttachCell(submissions[rowIndex]);
-      }
-      // Update detail modal if open
+      if (rowEl) rowEl.querySelector('.upload-cell').innerHTML = buildAttachCell(submissions[rowIndex]);
       if (currentSubmission && currentSubmission.rowIndex === rowIndex) {
         currentSubmission.attachments = submissions[rowIndex].attachments;
         document.getElementById('detail-body').innerHTML = buildDetailHTML(currentSubmission);
@@ -536,61 +656,6 @@ function modalDrop(e){
   if(e.dataTransfer.files.length>0 && currentSubmission) modalUploadFile(e.dataTransfer.files[0]);
 }
 function modalFileSelect(e){ if(e.target.files.length>0 && currentSubmission) modalUploadFile(e.target.files[0]); }
-
-async function modalUploadFile(file) {
-  var statusEl = document.getElementById('modal-upload-status');
-  if (statusEl) { statusEl.style.color='var(--text-muted)'; statusEl.textContent = 'Uploading '+file.name+'\u2026'; }
-  try {
-    var b64 = await fileToBase64(file);
-    var b64Data = b64.split(',')[1];
-    postUploadForm(currentSubmission.id, file.name, file.type||'application/octet-stream', b64Data);
-    if (statusEl) { statusEl.style.color='var(--accent)'; statusEl.textContent = '\u2713 Sent! Refreshing in a few seconds\u2026'; }
-    var idx = currentSubmission.rowIndex;
-    setTimeout(async function(){
-      await refreshSubmission(idx);
-      if (statusEl) { statusEl.textContent = ''; }
-    }, 4000);
-  } catch(err) {
-    if(statusEl){ statusEl.style.color='var(--red)'; statusEl.textContent='Upload failed: '+err.message; }
-  }
-}
-
-// Hidden iframe form POST — the only reliable way to cross-post large payloads
-// from a static GitHub Pages site to Apps Script without CORS issues
-function postUploadForm(submissionId, fileName, mimeType, b64Data) {
-  var iframe = document.getElementById('upload-frame');
-  if (!iframe) {
-    iframe = document.createElement('iframe');
-    iframe.name = 'upload-frame';
-    iframe.id = 'upload-frame';
-    iframe.style.display = 'none';
-    document.body.appendChild(iframe);
-  }
-
-  var form = document.createElement('form');
-  form.method = 'POST';
-  form.action = APPS_SCRIPT_URL;
-  form.target = 'upload-frame';
-  form.style.display = 'none';
-
-  function addField(name, value) {
-    var input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = name;
-    input.value = value;
-    form.appendChild(input);
-  }
-
-  addField('action', 'uploadFile');
-  addField('submissionId', submissionId);
-  addField('fileName', fileName);
-  addField('mimeType', mimeType);
-  addField('fileData', b64Data);
-
-  document.body.appendChild(form);
-  form.submit();
-  setTimeout(function() { document.body.removeChild(form); }, 1000);
-}
 
 // ── PRINT ────────────────────────────────────────────────────
 function printSubmission() {
