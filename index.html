@@ -733,7 +733,7 @@ async function saveEmails(){
 function buildFolderList() {
   var map = {};
   submissions.forEach(function(s) {
-    var num = s.project.number || '—';
+    var num = String(s.project.number || '—');
     if (!map[num]) map[num] = { number: num, name: s.project.name || '', count: 0, latestTs: 0 };
     map[num].count++;
     var ts = subTs(s);
@@ -749,8 +749,9 @@ function renderFolderList(folders) {
   var list = document.getElementById('folder-list');
   if (!folders.length) { list.innerHTML = '<div class="folder-empty">No folders found</div>'; return; }
   list.innerHTML = folders.map(function(f) {
-    var active = activeFolder === f.number ? ' active' : '';
-    return '<div class="folder-item'+active+'" onclick="selectFolder(\''+f.number.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')">'
+    var numStr = String(f.number);
+    var active = activeFolder === numStr ? ' active' : '';
+    return '<div class="folder-item'+active+'" onclick="selectFolder(\''+numStr.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')">'
       +'<svg class="folder-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>'
       +'<div class="folder-body">'
       +'<div class="folder-number">'+f.number+'</div>'
