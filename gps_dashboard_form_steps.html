@@ -498,6 +498,54 @@ textarea { resize: vertical; min-height: 70px; }
 #success-screen p { color: var(--text-muted); font-size: 16px; line-height: 1.6; max-width: 400px; margin: 0 auto; }
 
 .hidden { display: none !important; }
+
+/* ── DRAFT BANNER ── */
+.draft-banner {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  background: rgba(154,181,74,0.12);
+  border: 1px solid rgba(154,181,74,0.3);
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+}
+.draft-banner-label { font-size: 14px; font-weight: 600; color: var(--accent); }
+.draft-banner-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+.btn-resume {
+  background: var(--accent); color: var(--bg-deep);
+  font-size: 13px; padding: 8px 18px;
+}
+.btn-discard {
+  background: rgba(255,255,255,0.08); color: var(--text-muted);
+  border: 1px solid rgba(255,255,255,0.1);
+  font-size: 13px; padding: 8px 14px;
+}
+
+/* ── SAVE DRAFT BUTTON ── */
+.btn-save-draft {
+  background: rgba(154,181,74,0.15);
+  border: 1px solid rgba(154,181,74,0.3);
+  color: var(--accent);
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px; font-weight: 600;
+  padding: 7px 14px; border-radius: 7px;
+  cursor: pointer; white-space: nowrap;
+  transition: all 0.2s;
+}
+.btn-save-draft:hover { background: rgba(154,181,74,0.25); }
+
+/* ── SAVE TOAST ── */
+#save-toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: rgba(37,40,32,0.97);
+  border: 1px solid rgba(154,181,74,0.4);
+  color: var(--accent);
+  padding: 10px 22px; border-radius: 8px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px; font-weight: 600;
+  z-index: 999; pointer-events: none;
+  opacity: 0; transition: opacity 0.3s;
+}
+#save-toast.visible { opacity: 1; }
 </style>
 </head>
 <body>
@@ -508,9 +556,11 @@ textarea { resize: vertical; min-height: 70px; }
     <div class="logo-mark" style="background:none;overflow:hidden;padding:0">
       <img src="data:image/png;base64,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" style="width:44px;height:44px;object-fit:cover;border-radius:50%;display:block">
     </div>
-    <div>
+    <div style="flex:1">
       <div class="header-title">LU GPS Dashboard Form</div>
     </div>
+    <a href="my-forms.html" class="btn-save-draft" style="text-decoration:none;margin-right:4px">← My Forms</a>
+    <button class="btn-save-draft" onclick="saveDraft(true)">Save Draft</button>
   </div>
   </div>
 
@@ -529,6 +579,18 @@ textarea { resize: vertical; min-height: 70px; }
 </div>
 
 <div class="page-wrap">
+
+  <!-- Draft resume banner -->
+  <div id="draft-banner" class="draft-banner hidden">
+    <div style="flex:1;min-width:0">
+      <div class="draft-banner-label">You have a saved draft</div>
+      <div id="draft-banner-text" class="draft-banner-sub"></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-shrink:0">
+      <button class="btn btn-resume" onclick="resumeDraft()">Resume Draft</button>
+      <button class="btn btn-discard" onclick="discardDraft()">Start Fresh</button>
+    </div>
+  </div>
 
   <!-- ══════════════════════════════════════
        STEP 1 — PROJECT INFO
@@ -586,7 +648,7 @@ textarea { resize: vertical; min-height: 70px; }
 
     <div class="nav-row">
       <div></div>
-      <button class="btn btn-next" onclick="goTo(2)">Continue →</button>
+      <button class="btn btn-next" onclick="goTo(2)">Save & Continue →</button>
     </div>
   </div>
 
@@ -643,7 +705,7 @@ textarea { resize: vertical; min-height: 70px; }
 
     <div class="nav-row">
       <button class="btn btn-back" onclick="goTo(1)">← Back</button>
-      <button class="btn btn-next" onclick="goTo(3)">Continue →</button>
+      <button class="btn btn-next" onclick="goTo(3)">Save & Continue →</button>
     </div>
   </div>
 
@@ -803,7 +865,7 @@ textarea { resize: vertical; min-height: 70px; }
 
     <div class="nav-row">
       <button class="btn btn-back" onclick="goTo(2)">← Back</button>
-      <button class="btn btn-next" onclick="goTo(4)">Continue →</button>
+      <button class="btn btn-next" onclick="goTo(4)">Save & Continue →</button>
     </div>
   </div>
 
@@ -844,7 +906,7 @@ textarea { resize: vertical; min-height: 70px; }
 
     <div class="nav-row">
       <button class="btn btn-back" onclick="goTo(3)">← Back</button>
-      <button class="btn btn-next" onclick="goTo(5)">Review →</button>
+      <button class="btn btn-next" onclick="goTo(5)">Save & Review →</button>
     </div>
   </div>
 
@@ -868,6 +930,8 @@ textarea { resize: vertical; min-height: 70px; }
 
 </div><!-- /page-wrap -->
 
+<div id="save-toast">Draft saved ✓</div>
+
 <!-- SUCCESS -->
 <div id="success-screen">
   <div class="success-icon">✓</div>
@@ -881,6 +945,15 @@ textarea { resize: vertical; min-height: 70px; }
 // ════════════════════════════════════════
 let currentStep = 1;
 const TOTAL_STEPS = 5;
+let draftId = null;
+const DRAFT_KEY = 'm4_dashboard_drafts';
+
+function generateUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
 let specialFeaturesOn = null; // tracks yes/no for special features
 
 const tagState = {
@@ -984,6 +1057,7 @@ const rowCounts = {};
 // ════════════════════════════════════════
 function goTo(n) {
   if (n > currentStep && !validate(currentStep)) return;
+  if (currentStep === 4) captureEstimateData();
   document.getElementById('step-' + currentStep).classList.remove('active');
   currentStep = n;
   document.getElementById('step-' + n).classList.add('active');
@@ -992,6 +1066,7 @@ function goTo(n) {
   if (n === 3) applyScopeToStep3();
   if (n === 4) buildEstimateList();
   if (n === 5) buildReview();
+  saveDraft(false);
 }
 
 function updateProgress() {
@@ -1360,6 +1435,7 @@ function buildEstimateList() {
     specialFeatures.forEach(sf => { html += buildEstCardSpecial(sf); });
   }
   list.innerHTML = html;
+  restoreEstimateData();
 }
 
 function buildEstCardSpecial(sf) {
@@ -1633,7 +1709,8 @@ async function submitForm() {
     hbhSpecial: tagState['hbh-special'],
     specialFeatures: getSpecialFeatures(),
     useEstimates: useEstimates || false,
-    estimates: useEstimates ? collectEstimateData() : []
+    estimates: useEstimates ? collectEstimateData() : [],
+    draftId: draftId || null
   };
 
   try {
@@ -1644,6 +1721,15 @@ async function submitForm() {
       body: JSON.stringify(payload)
     });
     // no-cors means we can't read the response, but if no error was thrown it went through
+    // Clear this draft from localStorage
+    try {
+      let drafts = JSON.parse(localStorage.getItem(DRAFT_KEY) || '[]');
+      if (Array.isArray(drafts) && draftId) {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(drafts.filter(d => d.draftId !== draftId)));
+      } else {
+        localStorage.removeItem(DRAFT_KEY);
+      }
+    } catch(e) {}
     document.querySelector('.sticky-header').style.display = 'none';
     document.querySelector('.page-wrap').style.display = 'none';
     document.getElementById('success-screen').style.display = 'block';
@@ -1656,6 +1742,339 @@ async function submitForm() {
 }
 
 // ════════════════════════════════════════
+// ESTIMATE DATA PERSISTENCE (back/forward)
+// ════════════════════════════════════════
+let savedEstimateData = {};
+
+function captureEstimateData() {
+  savedEstimateData = {};
+  document.querySelectorAll('.est-layer-card').forEach(card => {
+    const id = card.id.replace('elc-', '');
+    const cb = document.getElementById('elcb-' + id);
+    const rows = [];
+    document.querySelectorAll('#rows-' + id + ' .combo-row').forEach(row => {
+      const values = [...row.querySelectorAll('input:not([type=checkbox])')].map(i => i.value);
+      rows.push(values);
+    });
+    savedEstimateData[id] = { checked: cb ? cb.checked : false, rows };
+  });
+}
+
+function restoreEstimateData() {
+  Object.entries(savedEstimateData).forEach(([id, data]) => {
+    if (!data.rows || data.rows.length === 0) return;
+
+    // Add extra rows beyond the first (which is always rendered)
+    for (let i = 1; i < data.rows.length; i++) {
+      if (id.startsWith('sf_')) {
+        const addBtn = document.querySelector('#elc-' + id + ' .add-row-btn');
+        const match = addBtn && addBtn.getAttribute('onclick') &&
+          addBtn.getAttribute('onclick').match(/addRowSpecial\('[^']*','([^']*)'\)/);
+        addRowSpecial(id, match ? match[1] : 'Quantity');
+      } else {
+        addRow(id);
+      }
+    }
+
+    // Restore input values row by row
+    data.rows.forEach((rowVals, rowIdx) => {
+      const rowEl = document.querySelectorAll('#rows-' + id + ' .combo-row')[rowIdx];
+      if (!rowEl) return;
+      const inputs = [...rowEl.querySelectorAll('input:not([type=checkbox])')];
+      rowVals.forEach((v, i) => { if (inputs[i]) inputs[i].value = v; });
+    });
+
+    // Restore checkbox / open state
+    if (data.checked) {
+      const cb = document.getElementById('elcb-' + id);
+      if (cb) { cb.checked = true; applyEstCheck(id, true); }
+    }
+  });
+}
+
+// ════════════════════════════════════════
+// DRAFT SAVE / RESTORE (localStorage)
+// ════════════════════════════════════════
+function saveDraft(showToast) {
+  if (currentStep === 4) captureEstimateData();
+
+  const submitter = ((val('sub-first') || '') + ' ' + (val('sub-last') || '')).trim();
+  const projName  = val('proj-name')   || '';
+  const projNum   = val('proj-number') || '';
+
+  // First save requires all 3 identifying fields
+  if (!draftId && (!submitter || !projName || !projNum)) {
+    if (showToast) {
+      const t = document.getElementById('save-toast');
+      t.textContent = 'Fill in Submitter Name, Project Name & Number to save a draft';
+      t.style.color = 'var(--red)';
+      t.classList.add('visible');
+      setTimeout(() => { t.classList.remove('visible'); t.textContent = 'Draft saved ✓'; t.style.color = ''; }, 3500);
+    }
+    return;
+  }
+
+  // Generate UUID on first qualifying save
+  if (!draftId) {
+    draftId = generateUUID();
+    history.replaceState({}, '', '?draft=' + draftId);
+  }
+
+  const formState = {
+    version: 1,
+    savedAt: Date.now(),
+    currentStep,
+    inputs: {
+      'sub-first':   val('sub-first')   || '',
+      'sub-last':    val('sub-last')    || '',
+      'proj-name':   val('proj-name')   || '',
+      'proj-number': val('proj-number') || '',
+      'proj-date':   val('proj-date')   || '',
+      'coll-first':  val('coll-first')  || '',
+      'coll-last':   val('coll-last')   || '',
+      'other-desc':  val('other-desc')  || ''
+    },
+    scope: getScope(),
+    tagState: JSON.parse(JSON.stringify(tagState)),
+    specialFeaturesOn,
+    specialFeatureRows: getSpecialFeatures(),
+    hbhValue,
+    useEstimates,
+    estimateData: savedEstimateData
+  };
+
+  // Save/update entry in the m4_dashboard_drafts array
+  try {
+    let drafts = [];
+    try { drafts = JSON.parse(localStorage.getItem(DRAFT_KEY) || '[]'); } catch(e) { drafts = []; }
+    if (!Array.isArray(drafts)) drafts = [];
+    const idx = drafts.findIndex(d => d.draftId === draftId);
+    const entry = { draftId, projectName: projName, projectNumber: projNum, submitter, currentStep, savedAt: formState.savedAt, formState };
+    if (idx >= 0) drafts[idx] = entry; else drafts.push(entry);
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(drafts));
+  } catch(e) {}
+
+  // POST to server (fire-and-forget, no-cors)
+  try {
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'saveDraft', draftId, submitter, projectName: projName, projectNumber: projNum, currentStep, formState })
+    });
+  } catch(e) {}
+
+  if (showToast) showSaveToast();
+}
+
+function showSaveToast() {
+  const t = document.getElementById('save-toast');
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 2000);
+}
+
+function checkForDraft() {
+  // URL param takes priority — arriving via "Resume Draft" link from my-forms.html
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlDraftId = urlParams.get('draft');
+  if (urlDraftId) {
+    draftId = urlDraftId;
+    loadDraftFromServer(urlDraftId);
+    return;
+  }
+
+  // Fall back to localStorage array
+  try {
+    let drafts = JSON.parse(localStorage.getItem(DRAFT_KEY) || '[]');
+    if (!Array.isArray(drafts) || drafts.length === 0) return;
+    drafts.sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
+    const latest = drafts[0];
+
+    if (drafts.length === 1) {
+      const d = new Date(latest.savedAt);
+      const dateStr = d.toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' }) +
+                      ' at ' + d.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' });
+      document.getElementById('draft-banner-text').textContent =
+        '"' + (latest.projectName || 'Untitled') + '" — saved ' + dateStr;
+    } else {
+      document.getElementById('draft-banner-text').textContent =
+        drafts.length + ' saved drafts — visit My Forms to pick one';
+    }
+    show('draft-banner', true);
+    window._pendingResumeDraft = latest;
+  } catch(e) {}
+}
+
+async function loadDraftFromServer(id) {
+  try {
+    const resp = await fetch(APPS_SCRIPT_URL + '?action=getDraft&id=' + encodeURIComponent(id));
+    const result = await resp.json();
+    if (result.found && result.draft && result.draft.formState) {
+      applyDraft(result.draft.formState);
+      // Refresh localStorage cache with server copy
+      try {
+        let drafts = JSON.parse(localStorage.getItem(DRAFT_KEY) || '[]');
+        if (!Array.isArray(drafts)) drafts = [];
+        const idx = drafts.findIndex(d => d.draftId === id);
+        const entry = { draftId: id, projectName: result.draft.projectName, projectNumber: result.draft.projectNumber, submitter: result.draft.submitter, currentStep: result.draft.currentStep, savedAt: Date.now(), formState: result.draft.formState };
+        if (idx >= 0) drafts[idx] = entry; else drafts.push(entry);
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(drafts));
+      } catch(e) {}
+      return;
+    }
+  } catch(e) {}
+
+  // Server unavailable — fall back to localStorage cache
+  try {
+    const drafts = JSON.parse(localStorage.getItem(DRAFT_KEY) || '[]');
+    if (Array.isArray(drafts)) {
+      const entry = drafts.find(d => d.draftId === id);
+      if (entry && entry.formState) applyDraft(entry.formState);
+    }
+  } catch(e) {}
+}
+
+function resumeDraft() {
+  const p = window._pendingResumeDraft;
+  if (!p) { window.location.href = 'my-forms.html'; return; }
+  if (p.draftId) {
+    draftId = p.draftId;
+    history.replaceState({}, '', '?draft=' + draftId);
+    loadDraftFromServer(draftId);
+  } else if (p.formState) {
+    applyDraft(p.formState);
+  }
+  show('draft-banner', false);
+}
+
+function discardDraft() {
+  localStorage.removeItem(DRAFT_KEY);
+  show('draft-banner', false);
+}
+
+function applyDraft(draft) {
+  // Restore simple text inputs
+  Object.entries(draft.inputs || {}).forEach(([id, v]) => {
+    const el = document.getElementById(id);
+    if (el) el.value = v;
+  });
+
+  // Restore scope chips
+  (draft.scope || []).forEach(scopeVal => {
+    const inp = document.querySelector('.scope-chip input[value="' + scopeVal + '"]');
+    if (inp) {
+      inp.checked = true;
+      inp.closest('.scope-chip').classList.add('selected');
+    }
+  });
+  show('card-other-desc', (draft.scope || []).includes('other'));
+
+  // Restore tagState and pills
+  if (draft.tagState) {
+    Object.assign(tagState, draft.tagState);
+    Object.keys(tagState).forEach(g => renderPills(g));
+  }
+
+  // Restore special features toggle
+  if (draft.specialFeaturesOn !== null && draft.specialFeaturesOn !== undefined) {
+    specialFeaturesOn = draft.specialFeaturesOn;
+    const v = specialFeaturesOn ? 'yes' : 'no';
+    document.getElementById('sf-yes').classList.toggle('selected', v === 'yes');
+    document.getElementById('sf-no').classList.toggle('selected', v === 'no');
+    show('card-special-features-input', v === 'yes');
+  }
+
+  // Restore special feature rows
+  const sfRows = draft.specialFeatureRows || [];
+  if (sfRows.length > 0) {
+    const container = document.getElementById('special-feature-rows');
+    container.innerHTML = '';
+    sfRows.forEach((sf, idx) => {
+      const div = document.createElement('div');
+      div.className = 'combo-row g2 sf-row';
+      div.style.position = 'relative';
+      const safeName = (sf.name || '').replace(/"/g, '&quot;');
+      div.innerHTML = (idx > 0 ? '<button class="del-row-btn" onclick="delRow(this);refreshSpecialFeatureNames()" type="button">×</button>' : '') +
+        '<div class="cf-wrap"><label>Feature Name</label>' +
+        '<input type="text" class="sf-name" placeholder="Feature name" oninput="refreshSpecialFeatureNames()" value="' + safeName + '"></div>' +
+        '<div class="cf-wrap"><label>Feature Type</label>' +
+        '<select class="sf-type">' +
+        '<option value="">— Select type —</option>' +
+        '<option value="Point"' + (sf.type === 'Point' ? ' selected' : '') + '>Point</option>' +
+        '<option value="Line"' + (sf.type === 'Line'  ? ' selected' : '') + '>Line</option>' +
+        '<option value="Polygon"' + (sf.type === 'Polygon' ? ' selected' : '') + '>Polygon</option>' +
+        '</select></div>';
+      container.appendChild(div);
+    });
+    refreshSpecialFeatureNames();
+  }
+
+  // Restore hbhValue (button state only — card visibility set in restoreToStep)
+  if (draft.hbhValue) {
+    hbhValue = draft.hbhValue;
+    document.getElementById('hbh-yes-btn').classList.toggle('selected', hbhValue === 'yes');
+    document.getElementById('hbh-no-btn').classList.toggle('selected', hbhValue === 'no');
+  }
+
+  // Restore useEstimates
+  if (draft.useEstimates !== null && draft.useEstimates !== undefined) {
+    useEstimates = draft.useEstimates;
+    const v = useEstimates ? 'yes' : 'no';
+    document.getElementById('yn-yes').classList.toggle('selected', v === 'yes');
+    document.getElementById('yn-no').classList.toggle('selected', v === 'no');
+    show('card-est-detail', v === 'yes');
+  }
+
+  // Restore saved estimate data for step 4
+  if (draft.estimateData) savedEstimateData = draft.estimateData;
+
+  // Navigate to the saved step
+  restoreToStep(draft.currentStep || 1);
+}
+
+function syncMsListState(group) {
+  const listEl = document.getElementById(group + '-list');
+  if (!listEl) return;
+  listEl.querySelectorAll('.ms-item').forEach(item => {
+    const label = item.querySelector('.ms-item-label') &&
+                  item.querySelector('.ms-item-label').textContent;
+    const sel = label && tagState[group] && tagState[group].includes(label);
+    item.classList.toggle('selected', !!sel);
+    const cb = item.querySelector('input[type=checkbox]');
+    if (cb) cb.checked = !!sel;
+  });
+}
+
+function restoreToStep(n) {
+  document.getElementById('step-' + currentStep).classList.remove('active');
+  currentStep = n;
+  document.getElementById('step-' + n).classList.add('active');
+  updateProgress();
+
+  if (n === 3) {
+    applyScopeToStep3();
+    syncMsListState('drainage');
+    syncMsListState('irrigation');
+    syncMsListState('golf');
+    if (hbhValue === 'yes') {
+      const scope = getScope();
+      show('card-hbh-irrigation', scope.includes('irrigation'));
+      show('card-hbh-drainage',   scope.includes('drainage'));
+      refreshHBHList('drainage');
+      refreshHBHList('irrigation');
+      const sfNames = getSpecialFeatureNames();
+      show('card-hbh-special', sfNames.length > 0);
+      if (sfNames.length > 0) refreshHBHSpecialList();
+    }
+  }
+  if (n === 4) {
+    buildEstimateList(); // restoreEstimateData() called inside
+  }
+  if (n === 5) buildReview();
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ════════════════════════════════════════
 // HELPERS
 // ════════════════════════════════════════
 function show(id, visible) {
@@ -1663,6 +2082,9 @@ function show(id, visible) {
   if (!el) return;
   el.classList.toggle('hidden', !visible);
 }
+
+// Check for a saved draft on page load
+checkForDraft();
 </script>
 </body>
 </html>

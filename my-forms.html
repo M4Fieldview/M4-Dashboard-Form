@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Forms — LU GPS Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #252820;
+      --bg-deep: #1b1e17;
+      --card: #7a8c52;
+      --card-dark: #697849;
+      --text: #f2f0e6;
+      --text-muted: rgba(242,240,230,0.6);
+      --accent: #9ab54a;
+      --red: #e05a4a;
+      --radius: 14px;
+    }
+
+    html, body {
+      min-height: 100%;
+      background-color: var(--bg-deep);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-weight: 400;
+    }
+
+    body {
+      background-color: var(--bg-deep);
+      background-image:
+        repeating-radial-gradient(ellipse 140% 70% at 30% 40%, transparent 0%, transparent 42%, rgba(160,175,110,0.06) 43%, transparent 44%, transparent 58%, rgba(160,175,110,0.06) 59%, transparent 60%, transparent 74%, rgba(160,175,110,0.06) 75%, transparent 76%),
+        repeating-radial-gradient(ellipse 100% 60% at 70% 65%, transparent 0%, transparent 35%, rgba(160,175,110,0.06) 36%, transparent 37%, transparent 52%, rgba(160,175,110,0.06) 53%, transparent 54%);
+      background-attachment: fixed;
+    }
+
+    /* ── Header ── */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(27, 30, 23, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(154,181,74,0.15);
+      padding: 0 20px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .header-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--card-dark);
+      border: 2px solid rgba(154,181,74,0.35);
+      flex-shrink: 0;
+      object-fit: cover;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .header-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .header-logo-fallback {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.5px;
+    }
+
+    .header-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .btn-new-form {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent);
+      color: #1b1e17;
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 100px;
+      text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .btn-new-form:hover {
+      background: #b0cf57;
+      transform: translateY(-1px);
+    }
+
+    .btn-new-form:active {
+      transform: translateY(0);
+    }
+
+    /* ── Main content ── */
+    .main {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 32px 16px 80px;
+    }
+
+    /* ── Section labels ── */
+    .section-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .section + .section {
+      margin-top: 40px;
+    }
+
+    /* ── Draft cards ── */
+    .draft-card {
+      background: rgba(122,140,82,0.18);
+      border: 1px solid rgba(122,140,82,0.3);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+      transition: border-color 0.15s;
+    }
+
+    .draft-card:hover {
+      border-color: rgba(154,181,74,0.5);
+    }
+
+    .draft-card-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .draft-project-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .draft-project-number {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .draft-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 12px;
+    }
+
+    .draft-card-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .btn-resume {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--accent);
+      color: #1b1e17;
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 100px;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+
+    .btn-resume:hover { background: #b0cf57; }
+
+    .btn-dismiss {
+      background: none;
+      border: 1px solid rgba(242,240,230,0.2);
+      color: var(--text-muted);
+      font-size: 15px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.15s, color 0.15s;
+      flex-shrink: 0;
+    }
+
+    .btn-dismiss:hover {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    /* ── Search ── */
+    .search-wrap {
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      background: rgba(242,240,230,0.07);
+      border: 1.5px solid rgba(242,240,230,0.15);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      font-weight: 400;
+      padding: 13px 44px 13px 16px;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .search-input::placeholder { color: var(--text-muted); }
+
+    .search-input:focus {
+      border-color: var(--accent);
+      background: rgba(242,240,230,0.1);
+    }
+
+    .search-icon {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+      display: flex;
+    }
+
+    .search-status {
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--text-muted);
+      font-style: italic;
+      min-height: 20px;
+    }
+
+    .search-status.error { color: var(--red); font-style: normal; }
+
+    /* ── Spinner ── */
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(242,240,230,0.2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    /* ── Result cards ── */
+    #search-results { margin-top: 14px; }
+
+    .result-card {
+      background: rgba(27,30,23,0.7);
+      border: 1px solid rgba(242,240,230,0.1);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      margin-bottom: 10px;
+      transition: border-color 0.15s;
+    }
+
+    .result-card:hover { border-color: rgba(154,181,74,0.35); }
+
+    .result-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .result-card-info { flex: 1; min-width: 0; }
+
+    .badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 100px;
+      margin-bottom: 6px;
+    }
+
+    .badge-draft {
+      background: rgba(154,181,74,0.2);
+      color: var(--accent);
+      border: 1px solid rgba(154,181,74,0.4);
+    }
+
+    .badge-submitted {
+      background: rgba(242,240,230,0.08);
+      color: var(--text-muted);
+      border: 1px solid rgba(242,240,230,0.15);
+    }
+
+    .result-project-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .result-project-number {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .result-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 14px;
+      margin-bottom: 12px;
+    }
+
+    .result-actions { display: flex; gap: 8px; }
+
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 7px 16px;
+      border-radius: 100px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .btn-action:active { transform: translateY(1px); }
+
+    .btn-action-primary {
+      background: var(--accent);
+      color: #1b1e17;
+    }
+
+    .btn-action-primary:hover { background: #b0cf57; }
+
+    .btn-action-secondary {
+      background: rgba(242,240,230,0.1);
+      color: var(--text);
+    }
+
+    .btn-action-secondary:hover { background: rgba(242,240,230,0.16); }
+
+    /* ── Empty state ── */
+    .empty-state {
+      font-size: 14px;
+      color: var(--text-muted);
+      font-style: italic;
+      text-align: center;
+      padding: 24px 0 8px;
+    }
+
+    /* ── Bottom CTA ── */
+    .cta-section {
+      margin-top: 48px;
+    }
+
+    .btn-cta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      background: var(--accent);
+      color: #1b1e17;
+      font-family: 'Outfit', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 16px;
+      border-radius: var(--radius);
+      text-decoration: none;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .btn-cta:hover {
+      background: #b0cf57;
+      transform: translateY(-2px);
+    }
+
+    .btn-cta:active { transform: translateY(0); }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--bg);
+      border: 1px solid rgba(154,181,74,0.2);
+      border-radius: var(--radius);
+      padding: 28px 24px 24px;
+      max-width: 480px;
+      width: 100%;
+      position: relative;
+      animation: modalIn 0.2s ease;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(12px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: rgba(242,240,230,0.08);
+      border: none;
+      color: var(--text-muted);
+      font-size: 18px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .modal-close:hover {
+      background: rgba(224,90,74,0.15);
+      color: var(--red);
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 20px;
+      padding-right: 36px;
+    }
+
+    .modal-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      align-items: flex-start;
+    }
+
+    .modal-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      min-width: 110px;
+      padding-top: 2px;
+    }
+
+    .modal-value {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .modal-divider {
+      border: none;
+      border-top: 1px solid rgba(242,240,230,0.08);
+      margin: 16px 0;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-left">
+    <div class="header-logo">
+      <img src="" alt="LU" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+      <span class="header-logo-fallback" style="display:none;">LU</span>
+    </div>
+    <span class="header-title">LU GPS Dashboard Form</span>
+  </div>
+  <a href="gps_dashboard_form_steps.html" class="btn-new-form">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    New Form
+  </a>
+</header>
+
+<!-- Main -->
+<main class="main">
+
+  <!-- Local Drafts Section -->
+  <section class="section" id="drafts-section" style="display:none;">
+    <div class="section-eyebrow">On This Device</div>
+    <div id="drafts-list"></div>
+  </section>
+
+  <!-- Search Section -->
+  <section class="section" id="search-section">
+    <div class="section-eyebrow">Find a Form</div>
+    <div class="search-wrap">
+      <input
+        type="search"
+        class="search-input"
+        id="search-input"
+        placeholder="Search by name, project name, or number…"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <span class="search-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </span>
+    </div>
+    <div class="search-status" id="search-status"></div>
+    <div id="search-results"></div>
+  </section>
+
+  <!-- Bottom CTA -->
+  <section class="cta-section">
+    <a href="gps_dashboard_form_steps.html" class="btn-cta">
+      Start a New Form
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </section>
+
+</main>
+
+<!-- View Details Modal -->
+<div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal">
+    <button class="modal-close" id="modal-close" aria-label="Close">&times;</button>
+    <div class="modal-title" id="modal-title">Submission Details</div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwXspvQ63z8DmLarsvWt7xXQf1iYkAVpTy2Qccvmhnh8ViXJmyoDcMVJkPN9G-I9P7q/exec';
+  const DRAFT_KEY = 'm4_dashboard_drafts';
+
+  // ── Utilities ──────────────────────────────────────────────────────────────
+
+  function formatDate(raw) {
+    if (!raw) return '—';
+    const d = new Date(raw);
+    if (isNaN(d)) return raw;
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function escape(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // ── Local Drafts ──────────────────────────────────────────────────────────
+
+  function loadLocalDrafts() {
+    let drafts = [];
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (raw) drafts = JSON.parse(raw);
+      if (!Array.isArray(drafts)) drafts = [];
+    } catch (e) {
+      drafts = [];
+    }
+
+    const section = document.getElementById('drafts-section');
+    const list = document.getElementById('drafts-list');
+
+    if (!drafts.length) {
+      section.style.display = 'none';
+      return;
+    }
+
+    section.style.display = '';
+    list.innerHTML = drafts.map(d => buildLocalDraftCard(d)).join('');
+
+    list.querySelectorAll('.btn-dismiss-local').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        removeDraft(id);
+        loadLocalDrafts();
+      });
+    });
+  }
+
+  function buildLocalDraftCard(d) {
+    const stepLabel = d.currentStep && d.totalSteps
+      ? `Step ${d.currentStep} of ${d.totalSteps}`
+      : (d.currentStep ? `Step ${d.currentStep}` : 'In Progress');
+    const saved = formatDate(d.lastSaved || d.savedAt);
+    const projectName = escape(d.projectName || d.project_name || 'Untitled Project');
+    const projectNumber = escape(d.projectNumber || d.project_number || '');
+    const submitter = escape(d.submitterName || d.submitter_name || d.name || '');
+    const id = escape(d.id || d.draftId || '');
+
+    return `
+      <div class="draft-card">
+        <div class="draft-card-body">
+          <div class="draft-project-name">${projectName}</div>
+          ${projectNumber ? `<div class="draft-project-number">${projectNumber}</div>` : ''}
+          <div class="draft-meta">
+            ${submitter ? `<span>${submitter}</span>` : ''}
+            <span>${stepLabel}</span>
+            ${saved ? `<span>Saved ${saved}</span>` : ''}
+          </div>
+        </div>
+        <div class="draft-card-actions">
+          <a href="gps_dashboard_form_steps.html?draft=${id}" class="btn-resume">Resume →</a>
+          <button class="btn-dismiss btn-dismiss-local" data-id="${id}" aria-label="Remove draft" title="Remove">×</button>
+        </div>
+      </div>`;
+  }
+
+  function removeDraft(id) {
+    try {
+      let drafts = JSON.parse(localStorage.getItem(DRAFT_KEY) || '[]');
+      if (!Array.isArray(drafts)) drafts = [];
+      drafts = drafts.filter(d => String(d.id || d.draftId || '') !== String(id));
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(drafts));
+    } catch (e) {}
+  }
+
+  // ── Search ────────────────────────────────────────────────────────────────
+
+  let searchTimer = null;
+  let lastQuery = '';
+
+  document.getElementById('search-input').addEventListener('input', function () {
+    const q = this.value.trim();
+    clearTimeout(searchTimer);
+
+    if (q === lastQuery) return;
+
+    if (q.length < 2) {
+      lastQuery = '';
+      setStatus('');
+      setResults('');
+      return;
+    }
+
+    searchTimer = setTimeout(() => doSearch(q), 400);
+  });
+
+  async function doSearch(q) {
+    if (q === lastQuery) return;
+    lastQuery = q;
+
+    setStatus('<span class="spinner"></span>Searching…');
+    setResults('');
+
+    try {
+      const url = `${APPS_SCRIPT_URL}?action=search&q=${encodeURIComponent(q)}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      // Guard against stale response
+      if (document.getElementById('search-input').value.trim() !== q) return;
+
+      setStatus('');
+      renderResults(data, q);
+    } catch (err) {
+      if (document.getElementById('search-input').value.trim() !== q) return;
+      setStatus('Search unavailable — check your connection', true);
+      setResults('');
+    }
+  }
+
+  function setStatus(html, isError = false) {
+    const el = document.getElementById('search-status');
+    el.innerHTML = html;
+    el.className = 'search-status' + (isError ? ' error' : '');
+  }
+
+  function setResults(html) {
+    document.getElementById('search-results').innerHTML = html;
+  }
+
+  function buildResultCard(item, idx) {
+    const isDraft = (item.type || '').toLowerCase() === 'draft';
+    const badgeClass = isDraft ? 'badge-draft' : 'badge-submitted';
+    const badgeLabel = isDraft ? 'DRAFT' : 'SUBMITTED';
+
+    const projectName = escape(item.projectName || item.project_name || 'Untitled Project');
+    const projectNumber = escape(item.projectNumber || item.project_number || '');
+    const submitter = escape(item.submitterName || item.submitter_name || item.name || '');
+    const dateRaw = item.submittedAt || item.submitted_at || item.lastSaved || item.savedAt;
+    const dateLabel = isDraft
+      ? `Step ${item.currentStep || '?'} of 5 · Last saved ${formatDate(dateRaw)}`
+      : `Submitted ${formatDate(dateRaw)}`;
+    const id = escape(item.id || item.draftId || '');
+
+    const actionBtn = isDraft
+      ? `<a href="gps_dashboard_form_steps.html?draft=${id}" class="btn-action btn-action-primary">Resume Draft →</a>`
+      : `<button class="btn-action btn-action-secondary btn-view-details" data-idx="${idx}">View Details →</button>`;
+
+    return `
+      <div class="result-card">
+        <div class="result-card-top">
+          <div class="result-card-info">
+            <div><span class="badge ${badgeClass}">${badgeLabel}</span></div>
+            <div class="result-project-name">${projectName}</div>
+            ${projectNumber ? `<div class="result-project-number">${projectNumber}</div>` : ''}
+          </div>
+        </div>
+        <div class="result-meta">
+          ${submitter ? `<span>${submitter}</span>` : ''}
+          <span>${dateLabel}</span>
+        </div>
+        <div class="result-actions">${actionBtn}</div>
+      </div>`;
+  }
+
+  function renderResults(data, q) {
+    let items = [];
+    if (Array.isArray(data)) items = data;
+    else if (Array.isArray(data.results)) items = data.results;
+    else if (Array.isArray(data.data)) items = data.data;
+
+    if (!items.length) {
+      setResults(`<div class="empty-state">No results found for "<em>${escape(q)}</em>"</div>`);
+      return;
+    }
+
+    const html = items.map((item, idx) => buildResultCard(item, idx)).join('');
+    setResults(html);
+
+    document.querySelectorAll('.btn-view-details').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.idx, 10);
+        openModal(items[idx]);
+      });
+    });
+  }
+
+  // ── Modal ─────────────────────────────────────────────────────────────────
+
+  function openModal(item) {
+    const projectName = item.projectName || item.project_name || 'Untitled Project';
+    const projectNumber = item.projectNumber || item.project_number || '—';
+    const submitter = item.submitterName || item.submitter_name || item.name || '—';
+    const dateRaw = item.submittedAt || item.submitted_at || item.savedAt;
+    const collector = item.gpsCollector || item.gps_collector || item.collector || '—';
+    const notes = item.notes || item.comments || '';
+
+    document.getElementById('modal-title').textContent = projectName;
+    document.getElementById('modal-body').innerHTML = `
+      <div class="modal-row">
+        <div class="modal-label">Submitter</div>
+        <div class="modal-value">${escape(submitter)}</div>
+      </div>
+      <div class="modal-row">
+        <div class="modal-label">Project</div>
+        <div class="modal-value">${escape(projectName)}</div>
+      </div>
+      <div class="modal-row">
+        <div class="modal-label">Project #</div>
+        <div class="modal-value">${escape(projectNumber)}</div>
+      </div>
+      <div class="modal-row">
+        <div class="modal-label">Submitted</div>
+        <div class="modal-value">${formatDate(dateRaw)}</div>
+      </div>
+      <div class="modal-row">
+        <div class="modal-label">GPS Collector</div>
+        <div class="modal-value">${escape(collector)}</div>
+      </div>
+      ${notes ? `<hr class="modal-divider"><div class="modal-row"><div class="modal-label">Notes</div><div class="modal-value">${escape(notes)}</div></div>` : ''}
+    `;
+
+    document.getElementById('modal-overlay').classList.add('open');
+    document.getElementById('modal-close').focus();
+  }
+
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('open');
+  }
+
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+
+  document.getElementById('modal-overlay').addEventListener('click', function (e) {
+    if (e.target === this) closeModal();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+
+  loadLocalDrafts();
+</script>
+
+</body>
+</html>
