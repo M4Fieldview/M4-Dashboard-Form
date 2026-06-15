@@ -188,9 +188,8 @@ body {
 
 /* ── PRINT ── */
 @media print {
-  body * { visibility: hidden; }
-  #print-area, #print-area * { visibility: visible; }
-  #print-area { position: fixed; inset: 0; background: white; padding: 32px; font-family: 'Outfit', Arial, sans-serif; color: #1a1a1a; font-size: 13px; }
+  body > *:not(#print-area) { display: none !important; }
+  #print-area { display: block !important; position: static; background: white; padding: 32px; font-family: 'Outfit', Arial, sans-serif; color: #1a1a1a; font-size: 13px; }
   .print-header { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; padding-bottom: 14px; border-bottom: 2px solid #5a7a30; }
   .print-header-logo img { width: 42px; height: 42px; object-fit: cover; border-radius: 50%; }
   .print-header-title { font-size: 20px; font-weight: 700; color: #3a5c1a; }
@@ -386,9 +385,9 @@ function renderTable() {
   var q = document.getElementById('search-input').value.trim().toLowerCase();
   var sort = document.getElementById('sort-select').value;
   var filtered = submissions.filter(function(s) {
-    if (activeFolder !== null && s.project.number !== activeFolder) return false;
+    if (activeFolder !== null && String(s.project.number) !== activeFolder) return false;
     if(!q) return true;
-    return s.project.name.toLowerCase().includes(q)||s.project.number.toLowerCase().includes(q)||s.submitter.toLowerCase().includes(q);
+    return (s.project.name||'').toLowerCase().includes(q)||String(s.project.number||'').toLowerCase().includes(q)||(s.submitter||'').toLowerCase().includes(q);
   });
   filtered.sort(function(a,b) {
     if(sort==='newest') return subTs(b) - subTs(a);
