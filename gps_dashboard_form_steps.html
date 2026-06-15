@@ -742,27 +742,29 @@ textarea { resize: vertical; min-height: 70px; }
       <div class="ms-wrap" id="ms-irrigation">
         <div class="ms-pills" id="irrigation-tags"></div>
         <div class="ms-list" id="irrigation-list">
-          <div class="ms-item" onclick="toggleMsItem('irrigation','Well',this)"><input type="checkbox"><span class="ms-item-label">Well</span></div>
-          <div class="ms-item" onclick="toggleMsItem('irrigation','Rain Bird Heads',this)"><input type="checkbox"><span class="ms-item-label">Rain Bird Heads</span></div>
           <div class="ms-item" onclick="toggleMsItem('irrigation','Toro Heads',this)"><input type="checkbox"><span class="ms-item-label">Toro Heads</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Rain Bird Heads',this)"><input type="checkbox"><span class="ms-item-label">Rain Bird Heads</span></div>
           <div class="ms-item" onclick="toggleMsItem('irrigation','Hunter Heads',this)"><input type="checkbox"><span class="ms-item-label">Hunter Heads</span></div>
-          <div class="ms-item" onclick="toggleMsItem('irrigation','Pump Station',this)"><input type="checkbox"><span class="ms-item-label">Pump Station</span></div>
-          <div class="ms-item" onclick="toggleMsItem('irrigation','Ground Plates',this)"><input type="checkbox"><span class="ms-item-label">Ground Plates</span></div>
-          <div class="ms-item" onclick="toggleMsItem('irrigation','Point of Connections',this)"><input type="checkbox"><span class="ms-item-label">Point of Connections</span></div>
           <div class="ms-item" onclick="toggleMsItem('irrigation','Existing Heads',this)"><input type="checkbox"><span class="ms-item-label">Existing Heads</span></div>
-          <div class="ms-item" onclick="toggleMsItem('irrigation','Backflows',this)"><input type="checkbox"><span class="ms-item-label">Backflows</span></div>
-          <div class="ms-item" onclick="toggleMsItem('irrigation','Air Relief Valves',this)"><input type="checkbox"><span class="ms-item-label">Air Relief Valves</span></div>
-          <div class="ms-item" onclick="toggleMsItem('irrigation','2 Wire Surge Devices',this)"><input type="checkbox"><span class="ms-item-label">2 Wire Surge Devices</span></div>
-          <div class="ms-item" onclick="toggleMsItem('irrigation','Wire Splices',this)"><input type="checkbox"><span class="ms-item-label">Wire Splices</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Electric Valves',this)"><input type="checkbox"><span class="ms-item-label">Electric Valves</span></div>
           <div class="ms-item" onclick="toggleMsItem('irrigation','Quick Couplers',this)"><input type="checkbox"><span class="ms-item-label">Quick Couplers</span></div>
           <div class="ms-item" onclick="toggleMsItem('irrigation','Satellites',this)"><input type="checkbox"><span class="ms-item-label">Satellites</span></div>
-          <div class="ms-item" onclick="toggleMsItem('irrigation','Drain Valves',this)"><input type="checkbox"><span class="ms-item-label">Drain Valves</span></div>
-          <div class="ms-item" onclick="toggleMsItem('irrigation','Lateral Valves',this)"><input type="checkbox"><span class="ms-item-label">Lateral Valves</span></div>
-          <div class="ms-item" onclick="toggleMsItem('irrigation','Isolation Valves',this)"><input type="checkbox"><span class="ms-item-label">Isolation Valves</span></div>
-          <div class="ms-item" onclick="toggleMsItem('irrigation','Electric Valves',this)"><input type="checkbox"><span class="ms-item-label">Electric Valves</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Weather Station',this)"><input type="checkbox"><span class="ms-item-label">Weather Station</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','2 Wire Surge Devices',this)"><input type="checkbox"><span class="ms-item-label">2 Wire Surge Devices</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Ground Plates',this)"><input type="checkbox"><span class="ms-item-label">Ground Plates</span></div>
           <div class="ms-item" onclick="toggleMsItem('irrigation','Wire Trench',this)"><input type="checkbox"><span class="ms-item-label">Wire Trench</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Wire Splices',this)"><input type="checkbox"><span class="ms-item-label">Wire Splices</span></div>
           <div class="ms-item" onclick="toggleMsItem('irrigation','Mainline Pipe',this)"><input type="checkbox"><span class="ms-item-label">Mainline Pipe</span></div>
           <div class="ms-item" onclick="toggleMsItem('irrigation','Lateral Pipe',this)"><input type="checkbox"><span class="ms-item-label">Lateral Pipe</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Isolation Valves',this)"><input type="checkbox"><span class="ms-item-label">Isolation Valves</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Lateral Valves',this)"><input type="checkbox"><span class="ms-item-label">Lateral Valves</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Drain Valves',this)"><input type="checkbox"><span class="ms-item-label">Drain Valves</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Air Relief Valves',this)"><input type="checkbox"><span class="ms-item-label">Air Relief Valves</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','PRVs',this)"><input type="checkbox"><span class="ms-item-label">PRVs</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Point of Connections',this)"><input type="checkbox"><span class="ms-item-label">Point of Connections</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Backflows',this)"><input type="checkbox"><span class="ms-item-label">Backflows</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Pump Station',this)"><input type="checkbox"><span class="ms-item-label">Pump Station</span></div>
+          <div class="ms-item" onclick="toggleMsItem('irrigation','Well',this)"><input type="checkbox"><span class="ms-item-label">Well</span></div>
         </div>
       </div>
       <div class="field-hint">Please select all Irrigation Items that need to be tracked.</div>
@@ -1332,6 +1334,8 @@ const LAYER_CONFIGS = {
   // Satellites: Stations + Further Specs + Qty
   'Satellites':           { label:'Satellites',           g:'g3', fields:[{k:'sta',l:'Stations',p:''},{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
   // Wire / linear: Pipe Size + Further Specs + Qty (length)
+  'Weather Station':      { label:'Weather Station',      g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
+  'PRVs':                 { label:'PRVs',                 g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
   'Wire Splices':         { label:'Wire Splices',         g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
   '2 Wire Surge Devices': { label:'2 Wire Surge Devices', g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity',p:'0',t:'number'}]},
   'Wire Trench':          { label:'Wire Trench',          g:'g2', fields:[{k:'specs',l:'Further Specs (if necessary)',p:''},{k:'qty',l:'Quantity (length)',p:'0',t:'number'}]},
